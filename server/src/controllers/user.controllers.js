@@ -1,0 +1,125 @@
+import { asyncHandler } from "../utils/AsyncHandler.js";
+import { User } from "../models/users.models.js";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { geocodeAddress } from "../utils/geocodeAddress.js";
+
+
+
+const generateAcessAndRefreshToken = (async (userId) => {
+      try{
+      const user = await User.findById(userId)
+      const accessToken = user.generateAccessToken()
+      const refreshToken = user.generateRefreshToken()
+      
+      user.refreshToken = refreshToken
+     await user.save({ validateBeforeSave:false })
+       
+      return { accessToken, refreshToken }
+  }catch(err){
+     throw new ApiError (500, err.message || "something went wrong while generating acess and refresh token")
+  }
+})
+
+const options = {
+     httpOnly : true,
+     secure : true     
+}
+
+export const registerUser = asyncHandler(async (req, res) => {
+
+  const { name, email, password, phone, city, state, pincode } = req.body;
+
+  const exists = await User.findOne({
+    $or: [{ email }, { phone }],
+  });
+
+  if (exists) {
+    throw new ApiError(409, "An account with this email or phone already exists.");
+  }
+
+  const { lat, lng } = await geocodeAddress({ city, state, pincode });
+
+  const user = await User.create({
+    name,
+    email,
+    password,
+    phone,
+    city,
+    state,
+    pincode,
+    location: {
+      type: "Point",
+      coordinates: [lng, lat],
+    },
+  });
+
+  const {accessToken, refreshToken} = await generateAcessAndRefreshToken(user._id)
+
+   const createdUser = await User.findById(user._id).select(
+      "-password -refreshToken",
+    )
+    if(!createdUser) throw new ApiError(500, "something went wrong while registering")
+    
+    
+   return res.status(200)
+  .cookie("accessToken",accessToken,options)
+  .cookie("refreshToken", refreshToken, options)
+  .json(
+    new ApiResponse(
+      200, {
+        user : createdUser, accessToken, refreshToken
+      },
+      "Join Successfully"
+    )
+  )
+});
+
+export const loginUser = asyncHandler ( async (req, res) => {
+     const { email, password} = req.body 
+
+     const user = await User.findOne({email})
+     if(!user) throw new ApiError(404, "user not found with this email")
+     
+    if (!await user.isPasswordsCorrect(password)) throw new ApiError(401, "incorrect password")
+ 
+ const {accessToken, refreshToken} = await generateAcessAndRefreshToken(user._id)
+  
+ const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
+
+  return res.status(200)
+  .cookie("accessToken",accessToken,options)
+  .cookie("refreshToken", refreshToken, options)
+  .json(
+    new ApiResponse(
+      200, {
+        user : loggedInUser, accessToken, refreshToken
+      },
+      "User logged in Successfully"
+    )
+  )
+})
+
+export const logoutUser = asyncHandler(async (req, res) => {
+  const result = await User.updateOne(
+  { _id: req.user._id },
+  {
+    $unset: {
+      refreshToken: 1
+    }
+  }
+)
+ 
+  return res
+  .status(200)
+  .clearCookie("accessToken",options)
+  .clearCookie("refreshToken",options)
+  .json( new ApiResponse(200,{}, "user logged Out") )
+
+} )
+
+export const getProfile = asyncHandler(async (req, res) => {
+   const user = await User.findById(req.user._id).select("-password -refreshToken")
+   return res.status(200)
+   .json(new ApiResponse(200, { user }, "Profile fetched successfully"))
+})

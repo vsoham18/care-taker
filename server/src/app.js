@@ -16,9 +16,13 @@ app.use(cookieParser())
 
 import userRouter from "./routes/user.routes.js";
 import errorHandler from "./middlewares/error.middleware.js";
+import otpRouter from "./routes/otp.routes.js";
+import careTakerRouter from "./routes/careTaker.routes.js";
 
 app.use("/api/v1/users", userRouter)
+app.use("/api/v1/otp", otpRouter)
+app.use("/api/v1/caretakers", careTakerRouter)
 
-app.use(errorHandler);
+app.use(errorHandler); 
 
 export { app }

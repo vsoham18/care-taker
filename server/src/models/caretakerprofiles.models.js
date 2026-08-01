@@ -65,4 +65,4 @@ const caretakerProfileSchema = new mongoose.Schema(
 caretakerProfileSchema.index({ location: "2dsphere" });
 caretakerProfileSchema.index({ city: 1, pincode: 1 });
 
-export default mongoose.model("CaretakerProfile", caretakerProfileSchema);
+export const CaretakerProfile = mongoose.model("CaretakerProfile", caretakerProfileSchema);

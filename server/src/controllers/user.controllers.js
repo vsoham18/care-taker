@@ -3,7 +3,7 @@ import { User } from "../models/users.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { geocodeAddress } from "../utils/geocodeAddress.js";
-
+import { verifyMobileVerificationToken } from "../utils/MobileVerificationToken.js";
 
 
 const generateAcessAndRefreshToken = (async (userId) => {
@@ -27,10 +27,40 @@ const options = {
 }
 
 export const registerUser = asyncHandler(async (req, res) => {
+      const {
+        name,
+        email,
+        password,
+        phone,
+    } = req.body;
 
-  const { name, email, password, phone, city, state, pincode } = req.body;
+const mobileVerificationToken = req.cookies.mobileVerificationToken;
 
-  const exists = await User.findOne({
+    if (!mobileVerificationToken) {
+        throw new ApiError(
+            400,
+            "Mobile verification required."
+        );
+    } 
+     
+    const decodedToken = verifyMobileVerificationToken(mobileVerificationToken)
+
+    if (!decodedToken) {
+        throw new ApiError(
+            400,
+            "Mobile verification expired. Please request a new OTP."
+        );
+    }
+     
+     if (decodedToken.phone !== phone) {
+        throw new ApiError(
+            400,
+            "Phone number mismatch."
+        );
+    }
+
+
+  const exists = await User.findOne({ 
     $or: [{ email }, { phone }],
   });
 
@@ -38,20 +68,12 @@ export const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "An account with this email or phone already exists.");
   }
 
-  const { lat, lng } = await geocodeAddress({ city, state, pincode });
-
   const user = await User.create({
     name,
     email,
     password,
     phone,
-    city,
-    state,
-    pincode,
-    location: {
-      type: "Point",
-      coordinates: [lng, lat],
-    },
+    phoneVerified: true,
   });
 
   const {accessToken, refreshToken} = await generateAcessAndRefreshToken(user._id)

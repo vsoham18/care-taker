@@ -4,7 +4,7 @@ import { verifyJwt } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.route("/send").post(verifyJwt, createOTP);
-router.route("/verify").post(verifyJwt, verifyOTP);
+router.route("/send").post(createOTP);
+router.route("/verify").post(verifyOTP);
 
 export default router;

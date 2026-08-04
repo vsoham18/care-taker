@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2" 
 
 const slotSchema = new mongoose.Schema(
   {
@@ -35,8 +36,7 @@ const caretakerProfileSchema = new mongoose.Schema(
 
     about: { type: String, maxlength: 1000, default: "" },
     experienceYears: { type: Number, default: 0 },
-
-    phone: { type: String, required: true }, 
+ 
     address: { type: String, required: true }, 
     pincode: { type: String, required: true },
     city: { type: String, required: true },
@@ -63,6 +63,7 @@ const caretakerProfileSchema = new mongoose.Schema(
 );
 
 caretakerProfileSchema.index({ location: "2dsphere" });
-caretakerProfileSchema.index({ city: 1, pincode: 1 });
+caretakerProfileSchema.index({ city: 1, pincode: 1 , careType: 1 });
+caretakerProfileSchema.plugin(mongooseAggregatePaginate);
 
 export const CaretakerProfile = mongoose.model("CaretakerProfile", caretakerProfileSchema);

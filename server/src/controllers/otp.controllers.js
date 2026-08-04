@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { OTP } from "../models/otp.models.js";
+import { generateMobileVerificationToken } from "../utils/MobileVerificationToken.js";
 import { User } from "../models/users.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -16,7 +17,7 @@ const generateOTP = () =>
   String(Math.floor(100000 + Math.random() * 900000));
 
 export const createOTP = asyncHandler(async (req, res) => {
-  const { phone, purpose = "advertisement" } = req.body;
+  const { phone } = req.body;
 
   if (!phone) {
     throw new ApiError(400, "Phone number is required.");
@@ -26,12 +27,11 @@ export const createOTP = asyncHandler(async (req, res) => {
   const otp = generateOTP();
   const otpHash = await bcrypt.hash(otp, 10);
 
-  await OTP.deleteMany({ phone: normalizedPhone, purpose });
+  await OTP.deleteMany({ phone: normalizedPhone });
 
   await OTP.create({
     phone: normalizedPhone,
     otp: otpHash,
-    purpose,
     attempts: 0,
     expiresAt: buildOtpExpiration(),
   });
@@ -41,7 +41,6 @@ export const createOTP = asyncHandler(async (req, res) => {
       200,
       {
         phone: normalizedPhone,
-        purpose,
         expiresInMinutes: OTP_TTL_MINUTES,
         otp: process.env.NODE_ENV !== "production" ? otp : undefined,
       },
@@ -51,14 +50,15 @@ export const createOTP = asyncHandler(async (req, res) => {
 });
 
 export const verifyOTP = asyncHandler(async (req, res) => {
-  const { phone, otp, purpose = "advertisement" } = req.body;
+  const { phone, otp } = req.body;
 
   if (!phone || !otp) {
     throw new ApiError(400, "Phone number and OTP are required.");
   }
 
   const normalizedPhone = normalizePhone(phone);
-  const otpRecord = await OTP.findOne({ phone: normalizedPhone, purpose }).sort({
+
+  const otpRecord = await OTP.findOne({ phone: normalizedPhone }).sort({
     createdAt: -1,
   });
    
@@ -76,6 +76,10 @@ if (otpRecord.attempts >= 5) {
     throw new ApiError(400, "OTP has expired. Please request a new one.");
   }
   
+   const mobileVerificationToken =
+        generateMobileVerificationToken(phone);
+ 
+
   const isValidOTP = await bcrypt.compare(otp, otpRecord.otp);
    
   if (!isValidOTP) {
@@ -86,24 +90,19 @@ if (otpRecord.attempts >= 5) {
 
   await OTP.deleteOne({ _id: otpRecord._id });
 
-  const existingUser = await User.findOne({
-    phone: normalizedPhone,
-    _id: { $ne: req.user?._id },
-  });
-
-  if (existingUser) {
-    throw new ApiError(409, "This phone number is already associated with another account.");
+  const options = 
+    {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 10 * 60 * 1000, // 10 minutes
   }
 
-  req.user.phone = normalizedPhone;
-  req.user.phoneVerified = true;
-  await req.user.save({ validateBeforeSave: false });
-
-  return res.status(200).json(
+  return res.status(200).cookie("mobileVerificationToken", mobileVerificationToken, options).json(
     new ApiResponse(
       200,
-      { phoneVerified: true, phone: normalizedPhone },
-      "Phone number verified successfully."
+      {},
+      "OTP verified successfully."
     )
   );
 });

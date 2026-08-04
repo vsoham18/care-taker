@@ -32,44 +32,6 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
-    pincode:{ 
-        type: String,
-        required: true
-    },
-    
-    city: {
-      type : String,
-      required : true
-      },
-
-    state:{
-        type: String,
-        required : true
-    },
-
-    location: {
-      type: {
-        type: String,
-        enum: ["Point"],
-        default: "Point",
-      },
-      coordinates: {
-        type: [Number], // [longitude, latitude]
-        default: [0, 0],
-      },
-    },
-
-    avatar: {
-      url: {
-        type: String,
-        default: "",
-      },
-      publicId: {
-        type: String,
-        default: "",
-      },
-    },
-
     isCaretaker: {
       type: Boolean,
       default: false,
@@ -80,6 +42,7 @@ const userSchema = new mongoose.Schema(
       ref: "CaretakerProfile",
       default: null,
     },
+
     refreshToken:{
         type: String
     }

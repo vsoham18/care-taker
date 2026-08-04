@@ -8,11 +8,10 @@ export const validate = (schema) => async (req, res, next) => {
 
     next();
   } catch (err) {
-     next(
-        new ApiError(
-            400,
-            err.issues[0].message
-        )
-    );
+      if (err instanceof ZodError) {
+      return next(new ApiError(400, err.issues[0].message));
+    }
+
+    next(err);
   }
 }; 

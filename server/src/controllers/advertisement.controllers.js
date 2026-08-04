@@ -14,22 +14,7 @@ const createAdvertisement = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User not found.");
   }
 
-  if (!user.phoneVerified) {
-    throw new ApiError(
-      400, 
-      "Please verify your mobile number before submitting the caretaker advertisement."
-    );
-  }
-
-  const { phone, careType, about, experienceYears, address, pincode, city, state, availability, isCurrentlyAvailable } = req.body;
-
-  if (phone && user.phone && phone !== user.phone) {
-    throw new ApiError(400, "Please use the verified mobile number for the advertisement.");
-  }
-
-  if (!careType?.length || !address || !pincode || !city || !state) {
-    throw new ApiError(400, "Please provide complete caretaker profile details.");
-  }
+  const { careType, about, experienceYears, address, pincode, city, state, availability, isCurrentlyAvailable } = req.body;
 
   const existingProfile = await CaretakerProfile.findOne({ user: user._id });
 
@@ -64,7 +49,6 @@ const createAdvertisement = asyncHandler(async (req, res) => {
     photo,
     about: about || "",
     experienceYears: Number(experienceYears || 0),
-    phone: user.phone,
     address,
     pincode,
     city,
@@ -87,8 +71,6 @@ const createAdvertisement = asyncHandler(async (req, res) => {
       201,
       {
         profile: caretakerProfile,
-        phoneVerified: user.phoneVerified,
-        phone: user.phone,
       },
       "Caretaker advertisement created successfully."
     )

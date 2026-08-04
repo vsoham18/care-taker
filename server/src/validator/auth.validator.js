@@ -32,19 +32,11 @@ export const registerSchema = z.object({
     .string()
     .min(6, "Password must be at least 6 characters")
     .max(20, "Password cannot exceed 20 characters"),
-
-  city: z
+  confirmPassword: z
     .string()
-    .trim()
-    .min(2, "City is required"),
-
-  state: z
-    .string()
-    .trim()
-    .min(2, "State is required"),
-
-  pincode: z
-    .string()
-    .trim()
-    .regex(/^\d{6}$/, "Pincode must be 6 digits"),
+    .min(6, "Confirm password must be at least 6 characters")
+    .max(20, "Confirm password cannot exceed 20 characters"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+ 
 });

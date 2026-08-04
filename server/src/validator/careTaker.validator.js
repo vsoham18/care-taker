@@ -48,14 +48,6 @@ export const createCaretakerProfileSchema = z.object({
     .min(0, "Experience cannot be negative")
     .default(0),
 
-  phone: z
-    .string()
-    .trim()
-    .regex(
-      /^[6-9]\d{9}$/,
-      "Please enter a valid 10-digit phone number"
-    ),
-
   address: z
     .string()
     .trim()
@@ -88,3 +80,6 @@ export const createCaretakerProfileSchema = z.object({
     .enum(["active", "paused"])
     .optional(),
 });
+
+export const updateCaretakerProfileSchema =
+    createCaretakerProfileSchema.partial();

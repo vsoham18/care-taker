@@ -1,31 +1,5 @@
 import { z } from "zod";
 
-export const slotSchema = z.object({
-  day: z.enum([
-    "Mon",
-    "Tue",
-    "Wed",
-    "Thu",
-    "Fri",
-    "Sat",
-    "Sun",
-  ]),
-
-  from: z
-    .string()
-    .regex(
-      /^([01]\d|2[0-3]):([0-5]\d)$/,
-      "Invalid start time (HH:MM)"
-    ),
-
-  to: z
-    .string()
-    .regex(
-      /^([01]\d|2[0-3]):([0-5]\d)$/,
-      "Invalid end time (HH:MM)"
-    ),
-});
-
 export const createCaretakerProfileSchema = z.object({
   careType: z
     .array(
@@ -67,10 +41,6 @@ export const createCaretakerProfileSchema = z.object({
     .string()
     .trim()
     .regex(/^\d{6}$/, "Pincode must be 6 digits"),
-
-  availability: z
-    .array(slotSchema)
-    .default([]),
 
   isCurrentlyAvailable: z.coerce
     .boolean()

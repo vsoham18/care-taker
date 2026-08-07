@@ -8,6 +8,7 @@ const router = Router();
 
 router.route("/register").post(validate(registerSchema),registerUser)
 router.route("/login").post(validate(loginSchema),loginUser) 
+router.route("/refresh-token").post(refreshAccessToken)
 
 // protected route 
 router.route("/logout").post(verifyJwt, logoutUser)

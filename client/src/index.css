@@ -2,7 +2,7 @@
 
 @import "tailwindcss";
 
-:root {
+@theme  {
   /* Fonts */
   --font-display: "Newsreader", serif;
   --font-body: "Manrope", sans-serif;

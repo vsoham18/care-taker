@@ -19,6 +19,22 @@ const listCaretakerProfiles = asyncHandler(async (req, res) => {
   const hasLocation =
     Number.isFinite(lat) && Number.isFinite(lng);
 
+    
+  const matchQuery = { status: "active" };
+  if (req.query.city) {
+    matchQuery.city = new RegExp(`^${escapeRegExp(req.query.city.trim())}$`, "i");
+  }
+  if (req.query.state) {
+    matchQuery.state = new RegExp(`^${escapeRegExp(req.query.state.trim())}$`, "i");
+  }
+  if (req.query.pincode) {
+    matchQuery.pincode = req.query.pincode.trim();
+  }
+
+  if (req.query.careType) {
+    matchQuery.careType = req.query.careType;
+  }
+
   const pipeline = hasLocation
     ? [
         {
@@ -29,9 +45,7 @@ const listCaretakerProfiles = asyncHandler(async (req, res) => {
             },
             distanceField: "distance",
             spherical: true,
-            query: {
-              status: "active",
-            },
+            query: matchQuery,
           },
         },
         {
@@ -56,9 +70,7 @@ const listCaretakerProfiles = asyncHandler(async (req, res) => {
       ]
     : [
         {
-          $match: {
-            status: "active",
-          },
+          $match: matchQuery,
         },
         {
           $sort: {
@@ -89,7 +101,7 @@ const listCaretakerProfiles = asyncHandler(async (req, res) => {
     },
     {
       $project: {
-        profilePhoto: 1,
+        photo: 1,
         careType: 1,
         city: 1,
         pincode: 1,
@@ -112,9 +124,7 @@ const listCaretakerProfiles = asyncHandler(async (req, res) => {
 
   const [profiles, total] = await Promise.all([
     CaretakerProfile.aggregate(pipeline),
-    CaretakerProfile.countDocuments({
-      status: "active",
-    }),
+    CaretakerProfile.countDocuments(matchQuery),
   ]);
 
   return res.status(200).json(

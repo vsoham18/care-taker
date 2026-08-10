@@ -25,6 +25,7 @@ export const createOTP = asyncHandler(async (req, res) => {
 
   const normalizedPhone = normalizePhone(phone);
   const otp = generateOTP();
+  // console.log(otp)
   const otpHash = await bcrypt.hash(otp, 10);
 
   await OTP.deleteMany({ phone: normalizedPhone });

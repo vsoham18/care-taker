@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { validate } from "../middlewares/validate.middleware.js";
 import { loginSchema, registerSchema } from "../validator/auth.validator.js";
-import { registerUser, loginUser, logoutUser, getProfile } from "../controllers/user.controllers.js";
+import { registerUser, loginUser, logoutUser, getProfile, refreshAccessToken } from "../controllers/user.controllers.js";
 import { verifyJwt } from "../middlewares/auth.middleware.js";
 
 const router = Router();
@@ -12,7 +12,7 @@ router.route("/refresh-token").post(refreshAccessToken)
 
 // protected route 
 router.route("/logout").post(verifyJwt, logoutUser)
-router.route("/me").get(verifyJwt, getProfile)
+router.route("/me").get(verifyJwt, getProfile) 
 
 
 export default router;

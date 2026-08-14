@@ -22,7 +22,7 @@ import bookingRouter from "./routes/booking.routes.js";
 import reviewRouter from "./routes/review.routes.js"
 
 app.use("/api/v1/users", userRouter)
-app.use("/api/v1/otp", otpRouter)
+// app.use("/api/v1/otp", otpRouter)
 app.use("/api/v1/caretakers", careTakerRouter)
 app.use("/api/v1/bookings", bookingRouter)
 app.use("/api/v1/review", reviewRouter)

@@ -11,20 +11,24 @@ const OtpInput = ({ phone, onVerified }) => {
   const [devHint, setDevHint] = useState("");
 
   const sendCode = async () => {
+
     if (!phone || !/^[6-9]\d{9}$/.test(phone)) {
       setError("Enter a valid 10-digit phone number first.");
       return;
     }
     setError("");
     setBusy(true);
+
     try {
       const { data } = await api.post("/otp/send", { phone });
       setSent(true);
       // the server only includes this outside production - handy for local testing
       setDevHint(data.data?.otp ? `Dev mode - your code is ${data.data.otp}` : "");
-    } catch (err) {
+    } 
+    catch (err) {
       setError(err.response?.data?.message || "Couldn't send OTP.");
-    } finally {
+    } 
+    finally {
       setBusy(false);
     }
   };
@@ -32,13 +36,16 @@ const OtpInput = ({ phone, onVerified }) => {
   const verifyCode = async () => {
     setError("");
     setBusy(true);
+
     try {
       await api.post("/otp/verify", { phone, otp });
       setVerified(true);
       onVerified?.(phone);
-    } catch (err) {
+    } 
+    catch (err) {
       setError(err.response?.data?.message || "Incorrect code.");
-    } finally {
+    } 
+    finally {
       setBusy(false);
     }
   };

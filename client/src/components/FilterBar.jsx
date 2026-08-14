@@ -1,21 +1,40 @@
 import { useState } from "react";
 
-const FilterBar = ({ onFilter, initial = {} }) => {
-  
-  const [city, setCity] = useState(initial.city || "");
-  const [state, setState] = useState(initial.state || "");
-  const [pincode, setPincode] = useState(initial.pincode || "");
+const FilterBar = ({ onFilter }) => {
+  const [address, setAddress] = useState({
+    city: "",
+    state: "",
+    pincode: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setAddress((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const submit = (e) => {
     e.preventDefault();
-    onFilter({ city: city.trim(), state: state.trim(), pincode: pincode.trim() });
+
+    onFilter({
+      city: address.city.trim(),
+      state: address.state.trim(),
+      pincode: address.pincode.trim(),
+    });
   };
 
   const clear = () => {
-    setCity("");
-    setState("");
-    setPincode("");
-    onFilter({ city: "", state: "", pincode: "" });
+    const emptyAddress = {
+      city: "",
+      state: "",
+      pincode: "",
+    };
+
+    setAddress(emptyAddress);
+    onFilter(emptyAddress);
   };
 
   return (
@@ -25,46 +44,53 @@ const FilterBar = ({ onFilter, initial = {} }) => {
     >
       <div className="flex-1">
         <label className="label">City</label>
+
         <input
+          name="city"
           className="input"
           placeholder="e.g. Kolkata"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
+          value={address.city}
+          onChange={handleChange}
         />
       </div>
 
       <div className="flex-1">
         <label className="label">State</label>
+
         <input
+          name="state"
           className="input"
           placeholder="e.g. West Bengal"
-          value={state}
-          onChange={(e) => setState(e.target.value)}
+          value={address.state}
+          onChange={handleChange}
         />
       </div>
 
       <div className="flex-1">
         <label className="label">Pincode</label>
+
         <input
+          name="pincode"
           className="input"
           placeholder="e.g. 700001"
-          value={pincode}
-          onChange={(e) => setPincode(e.target.value)}
+          value={address.pincode}
+          onChange={handleChange}
         />
       </div>
 
       <div className="flex gap-2">
-
         <button type="submit" className="btn btn-primary">
           Search
         </button>
 
-        <button type="button" onClick={clear} className="btn btn-ghost">
+        <button
+          type="button"
+          onClick={clear}
+          className="btn btn-ghost"
+        >
           Clear
         </button>
-
       </div>
-
     </form>
   );
 };

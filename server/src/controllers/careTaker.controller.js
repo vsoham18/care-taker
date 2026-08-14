@@ -165,9 +165,7 @@ const getCaretakerProfile = asyncHandler(async (req, res) => {
          pipeline: [
            {
              $project: {
-               name: 1,
-               email: 1,
-               phone: 1,
+               name: 1
              }
            }
          ]

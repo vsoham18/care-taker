@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import OtpInput from "../components/OtpInput.jsx";
+// import OtpInput from "../components/OtpInput.jsx";
 
 const initial = { name: "", email: "", phone: "", password: "", confirmPassword: "" };
-
+ 
 const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState(initial);
-  const [phoneVerified, setPhoneVerified] = useState(false);
+  // const [phoneVerified, setPhoneVerified] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -19,7 +19,7 @@ const Register = () => {
     e.preventDefault();
     setError("");
 
-    if (!phoneVerified) return setError("Please verify your phone number first.");
+    // if (!phoneVerified) return setError("Please verify your phone number first.");
     if (form.password !== form.confirmPassword) return setError("Passwords do not match.");
 
     setBusy(true);
@@ -53,19 +53,23 @@ const Register = () => {
 
         <div>
           <label className="label">Phone</label>
+
           <input
             required
             className="input"
             placeholder="10-digit mobile number"
             value={form.phone}
             onChange={update("phone")}
-            disabled={phoneVerified}
+            // disabled={phoneVerified}
           />
-          <div className="mt-2">
-            <OtpInput phone={form.phone} onVerified={() => setPhoneVerified(true)} />
-          </div>
-        </div>
 
+          {/* <div className="mt-2">
+            <OtpInput phone={form.phone} onVerified={() => setPhoneVerified(true)} />
+          </div> */}
+
+        </div>
+         
+         {/* password field */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="label">Password</label>

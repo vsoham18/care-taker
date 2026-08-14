@@ -7,7 +7,7 @@ import { createReview, getReview } from "../controllers/review.controller.js";
 const router = Router() ;
 
 router.route("/create/:bookingId").post(verifyJwt,validate(createReviewSchema),createReview)
-router.route("/:caretakerId").get(verifyJwt,getReview)
+router.route("/:caretakerId").get(getReview)
 
 
 export default router ;

@@ -35,30 +35,30 @@ export const registerUser = asyncHandler(async (req, res) => {
         phone,
     } = req.body;
 
-const mobileVerificationToken = req.cookies.mobileVerificationToken;
+// const mobileVerificationToken = req.cookies.mobileVerificationToken;
 
-    if (!mobileVerificationToken) {
-        throw new ApiError(
-            400,
-            "Mobile verification required."
-        );
-    } 
+//     if (!mobileVerificationToken) {
+//         throw new ApiError(
+//             400,
+//             "Mobile verification required."
+//         );
+//     } 
      
-    const decodedToken = verifyMobileVerificationToken(mobileVerificationToken)
+    // const decodedToken = verifyMobileVerificationToken(mobileVerificationToken)
 
-    if (!decodedToken) {
-        throw new ApiError(
-            400,
-            "Mobile verification expired. Please request a new OTP."
-        );
-    }
+    // if (!decodedToken) {
+    //     throw new ApiError(
+    //         400,
+    //         "Mobile verification expired. Please request a new OTP."
+    //     );
+    // }
      
-     if (decodedToken.phone !== phone) {
-        throw new ApiError(
-            400,
-            "Phone number mismatch."
-        );
-    }
+    //  if (decodedToken.phone !== phone) {
+    //     throw new ApiError(
+    //         400,
+    //         "Phone number mismatch."
+    //     );
+    // }
 
 
   const exists = await User.findOne({ 
@@ -73,9 +73,9 @@ const mobileVerificationToken = req.cookies.mobileVerificationToken;
     name,
     email,
     password,
-    phone,
-    phoneVerified: true,
+    phone, 
   });
+  // phoneVerified: true,
 
   const {accessToken, refreshToken} = await generateAcessAndRefreshToken(user._id)
 
@@ -142,7 +142,7 @@ export const logoutUser = asyncHandler(async (req, res) => {
 } )
 
 export const refreshAccessToken = asyncHandler( async(req,res) =>{
-    const incomingToken = req.cookies.refreshToken || req.body.refreshToken 
+    const incomingToken = req.cookies?.refreshToken || req.body?.refreshToken 
     
     if(!incomingToken) throw new ApiError (400, "Unauthorised request") 
     

@@ -9,7 +9,7 @@ import { CaretakerProfile } from "../models/careTakerProfiles.models.js";
 const createReview = asyncHandler( async (req,res) =>{
      const bookingId = req.params.bookingId;
 
-      const { rating, comment } = req.body;
+    const { rating, comment } = req.body;
 
     const booking = await Booking.findOne({
         _id: bookingId,
@@ -33,7 +33,8 @@ const createReview = asyncHandler( async (req,res) =>{
             "You have already reviewed this booking."
         );
     }
-    
+     
+    //  create review ----->
     const review = await Review.create({
         booking : bookingId ,
         user : req.user._id ,
@@ -43,26 +44,50 @@ const createReview = asyncHandler( async (req,res) =>{
     })
      
     booking.hasBeenRated = true;
-   
-    await booking.save();
-
+     await booking.save();
+    
+    //  check for careTaker existing ---->
     const caretaker = await CaretakerProfile.findById(
         booking.caretaker
+    )
+    if (!caretaker) {
+    throw new ApiError(404, "Caretaker profile not found.");
+   }
+     
+    //  RatingStats counts ---> 
+   const ratingStats = Review.aggregate([
+        {
+          $match : {
+            caretaker : caretaker._id 
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            ratingCount: { $sum: 1 },
+            ratingAvg: { $avg: "$rating" },
+           },
+        },
+   ])
+    
+    const stats = ratingStats[0] || {
+    ratingCount: 0,
+    ratingAvg: 0,
+   }
+     
+  //   update careTakerProfile ---> 
+    await CaretakerProfile.findByIdAndUpdate(
+        booking.caretaker,
+        {
+        $set: {
+            ratingCount: stats.ratingCount,
+            ratingAvg: Number(stats.ratingAvg.toFixed(1)),
+             },
+        },
+        {
+        new: true,
+        }
     );
-
-    caretaker.ratingCount += 1;
-
-    caretaker.ratingAvg = Number(
-           (
-                (
-                caretaker.ratingAvg * (caretaker.ratingCount - 1) +
-                rating
-                ) / caretaker.ratingCount
-
-          ).toFixed(1)
-        );
-
-    await caretaker.save();
 
 
     return res.status(201).json(

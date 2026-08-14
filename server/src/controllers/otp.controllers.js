@@ -25,7 +25,7 @@ export const createOTP = asyncHandler(async (req, res) => {
 
   const normalizedPhone = normalizePhone(phone);
   const otp = generateOTP();
-  // console.log(otp)
+  
   const otpHash = await bcrypt.hash(otp, 10);
 
   await OTP.deleteMany({ phone: normalizedPhone });
@@ -99,7 +99,10 @@ if (otpRecord.attempts >= 5) {
     maxAge: 10 * 60 * 1000, // 10 minutes
   }
 
-  return res.status(200).cookie("mobileVerificationToken", mobileVerificationToken, options).json(
+  return res.
+  status(200).
+  cookie("mobileVerificationToken", mobileVerificationToken, options).
+  json(
     new ApiResponse(
       200,
       {},

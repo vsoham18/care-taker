@@ -123,6 +123,7 @@ const getMyBookings = asyncHandler(async (req, res) => {
             caretaker : 1,
             "careTakerName.userDetails":1,
             status : 1,
+            hasBeenRated: 1,
             servicePeriod : 1,
             preferredSlot : 1,
             acceptedAt : 1,

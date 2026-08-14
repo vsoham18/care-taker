@@ -42,6 +42,7 @@ const Home = () => {
           }
 
           setLocationStatus("asking");
+          
           navigator.geolocation.getCurrentPosition(
 
             (pos) => {
@@ -56,7 +57,8 @@ const Home = () => {
           );
 
         }, []);
-
+  
+  //  fetch user data---->
     useEffect(() => {
     
       if (locationStatus === "idle" || locationStatus === "asking") return;
@@ -77,22 +79,22 @@ const Home = () => {
               careType: careType || undefined,
             },
           });
+          
           setProfiles(data?.data?.profiles || []);
           setPages(data?.data?.totalPages || 1);
-        } catch (err) {
+        }
+         catch (err) {
           setProfiles([]);
           setError("Couldn't reach the server. Make sure the Aya API is running.");
-        } finally {
+        } 
+        finally {
           setLoading(false);
         }
       };
 
       load();
-    }, [locationStatus, coords, page, filters]);
+    }, [locationStatus, coords, page, filters, careType]);
 
-    const visibleProfiles = careType
-      ? profiles.filter((p) => p.careType?.includes(careType))
-      : profiles;
 
   return (
     <div>
@@ -179,13 +181,17 @@ const Home = () => {
             }}
           />
         </div>
-
+       
+       {/* caretype section */}
       <div className="mb-8 flex flex-wrap gap-2">
 
-       {CARE_TYPES.map(([val, label]) => (
+         {CARE_TYPES.map(([val, label]) => (
             <button
               key={val}
-              onClick={() => setCareType(val)}
+              onClick={() =>{
+                 setPage(1)
+                setCareType(val)
+              }}
               className={`badge border ${
                 careType === val ? "border-teal-500 bg-teal-50 text-teal-600" : "border-line text-muted"
               }`}
@@ -193,21 +199,21 @@ const Home = () => {
               {label}
             </button>
           ))}
-        </div>
+      </div>
       
       {/* loading and error showing section ----> */}
         {loading ? (
           <p className="text-sm text-muted">Loading caretakers…</p>
         ) : error ? (
           <p className="text-sm text-rose-500">{error}</p>
-        ) : visibleProfiles.length === 0 ? (
+        ) : profiles.length === 0 ? (
           <p className="text-sm text-muted">
             No caretakers match that search yet. Try a different city, state,
             pincode, or care type.
           </p>
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {visibleProfiles.map((p) => (
+            {profiles.map((p) => (
               <CaretakerCard key={p._id} profile={p} />
             ))}
           </div>

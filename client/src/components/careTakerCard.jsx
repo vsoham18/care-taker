@@ -6,11 +6,11 @@ const careTypeLabel = {
   "baby-care": "Baby care",
   Both: "Elderly & baby care",
 };
-
+ 
 const CaretakerCard = ({ profile }) => {
   if (!profile) return null;
 
-  const photoUrl = profile.photo?.url || profile.profilePhoto?.url;
+  const photoUrl = profile.photo?.url ;
 
   return (
     <Link
@@ -33,14 +33,16 @@ const CaretakerCard = ({ profile }) => {
           </div>
         )}
 
-        <span 
+      <span 
+      
           className={
             profile.isCurrentlyAvailable ? "badge badge-available absolute left-3 top-3 bg-white/90" : "badge badge-unavailable absolute left-3 top-3 bg-white/90" 
           }
         >
           {profile.isCurrentlyAvailable && <span className="pulse-dot" />}
           {profile.isCurrentlyAvailable ? "Available" : "Booked up"}
-        </span>
+
+      </span>
 
         {typeof profile.distanceKm === "number" && (
           <span className="badge absolute right-3 top-3 bg-white/90 text-teal-600">

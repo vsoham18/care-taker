@@ -10,7 +10,7 @@ export const generateMobileVerificationToken = (phone) => {
     {
       expiresIn: process.env.MOBILE_VERIFICATION_TOKEN_EXPIRY || "10m",
     }
-  );
+  ); 
 };
 
 export const verifyMobileVerificationToken = (token) => {

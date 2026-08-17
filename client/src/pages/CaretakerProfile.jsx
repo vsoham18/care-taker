@@ -28,7 +28,7 @@ const CaretakerProfile = () => {
   const [sentMessage, setSentMessage] = useState("");
   const [error, setError] = useState("");
 
-  const load = async () => {
+  const loadProfile = async () => {
     try {
       const { data } = await api.get(`/caretakers/${id}`);
       setProfile(data.data);
@@ -48,7 +48,7 @@ const CaretakerProfile = () => {
 
 
   useEffect(() => {
-    load();
+    loadProfile();
     loadReviews(); 
     if (user) {
     loadMyBookings();
@@ -71,6 +71,7 @@ const CaretakerProfile = () => {
 
   const cancelBooking = async (bookingId) => {
     await api.patch(`/bookings/cancel/${bookingId}`);
+    loadMyBookings()
   };
 
   if (error) {
@@ -98,13 +99,16 @@ const CaretakerProfile = () => {
           {/* profile name and care type section  */}
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
+
               <h1 className="font-display text-3xl">{profile.userDetails?.name}</h1>
               <p className="mt-1 text-sm text-muted">
                 {profile.careType?.map((c) => careTypeLabel[c] || c).join(" · ")} ·{" "}
                 {profile.experienceYears || 0}+ yrs experience
               </p>
             </div>
+
             <RatingStars value={profile.ratingAvg} count={profile.ratingCount} />
+
           </div>
           {profile.about && <p className="mt-4 text-ink/80">{profile.about}</p>}
 
@@ -147,7 +151,9 @@ const CaretakerProfile = () => {
                   Request a booking
                 </button>
               ) }
+
               {sentMessage && <p className="mt-2 text-sm text-teal-600">{sentMessage}</p>}
+
             </div>
           ) : (<div className="text-sm text-muted">
                  login to request for a booking 
@@ -172,7 +178,7 @@ const CaretakerProfile = () => {
           onSent={() => {
             setShowBooking(false);
             setSentMessage("Request sent — the caretaker will call you to confirm.");
-            myBookings()
+            loadMyBookings();
           }}
         />
       )}

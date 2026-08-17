@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api/axios";
+import { toast } from "react-toastify";
 
 const statusStyle = {
   pending: "bg-honey-100 text-honey-500",
@@ -12,26 +13,49 @@ const statusStyle = {
 
 const formatDate = (d) =>
   d ? new Date(d).toLocaleDateString(undefined, { day: "numeric", month: "short" }) : "";
-
+ 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
-  const load = () => {
+ useEffect(()=>{
+    const load = async () => {
     setLoading(true);
-    api
-      .get("/bookings/my-bookings")
-      .then(({ data }) => setBookings(data.data || []))
-      .catch(() => setError("Couldn't reach the server. Make sure the Aya API is running."))
-      .finally(() => setLoading(false));
-  };
 
-  useEffect(load, []);
+      try {
+        const { data } = await api.get("/bookings/my-bookings");
 
-  const cancel = async (id) => {
-    await api.patch(`/bookings/cancel/${id}`);
-    load();
+        setBookings(data.data || []);
+      } 
+      catch (err) {
+
+        toast.error(
+          err.response?.data?.message ||
+          "Couldn't load your bookings."
+        );
+
+        setBookings([]);
+      } 
+      finally {
+        setLoading(false);
+      }
+   }
+   load() 
+ }, [])
+ 
+ const cancel = async (id) => {
+        try {
+        await api.patch(`/bookings/cancel/${id}`);
+
+        toast.success("Booking cancelled successfully.");
+
+        load();
+      } catch (err) {
+        toast.error(
+          err.response?.data?.message ||
+          "Couldn't cancel the booking."
+        );
+      }
   };
 
   return (
@@ -40,8 +64,6 @@ const MyBookings = () => {
 
       {loading ? (
         <p className="mt-6 text-sm text-muted">Loading…</p>
-      ) : error ? (
-        <p className="mt-6 text-sm text-rose-500">{error}</p>
       ) : bookings.length === 0 ? (
         <p className="mt-6 text-sm text-muted">
           No requests yet. Browse caretakers and send a request when you find

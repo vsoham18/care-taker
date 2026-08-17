@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/axios";
+import { toast } from "react-toastify";
 
 const formatDate = (d) =>
   d ? new Date(d).toLocaleDateString(undefined, { day: "numeric", month: "short" }) : "";
@@ -25,10 +26,24 @@ const Requests = () => {
     load();
   }, []);
 
-  const act = async (id, action) => {
+const act = async (id, action) => {
+  try {
     await api.patch(`/bookings/${action}/${id}`);
+
+    toast.success(
+      action === "accept"
+        ? "Booking accepted successfully."
+        : "Booking rejected successfully."
+    );
+
     load();
-  };
+  } catch (err) {
+    toast.error(
+      err.response?.data?.message ||
+      `Couldn't ${action} the booking.`
+    );
+  }
+};
 
   return (
     <div className="mx-auto max-w-3xl px-5 py-12">
@@ -62,6 +77,7 @@ const Requests = () => {
               {b.message && <p className="mt-2 text-sm text-ink/80">"{b.message}"</p>}
 
               <div className="mt-3 flex gap-2">
+
                 {b.status === "pending" && (
                   <>
                     <button onClick={() => act(b._id, "accept")} className="btn btn-primary text-xs">
@@ -72,11 +88,13 @@ const Requests = () => {
                     </button>
                   </>
                 )}
+
                 {b.status === "accepted" && (
                   <button onClick={() => act(b._id, "complete")} className="btn btn-secondary text-xs">
                     Mark service complete
                   </button>
                 )}
+
               </div>
             </li>
           ))}

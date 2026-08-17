@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/axios";
+import { toast } from "react-toastify";
 
 const CARE_TYPE_OPTIONS = [
   ["elderly-care", "Elderly care"],
@@ -12,7 +13,7 @@ const EditCaretakerProfile = () => {
   const navigate = useNavigate();
 
   const [loaded, setLoaded] = useState(false);
-  const [loadError, setLoadError] = useState("");
+
   const [form, setForm] = useState({
     careType: [],
     about: "",
@@ -27,7 +28,6 @@ const EditCaretakerProfile = () => {
   const [currentPhotoUrl, setCurrentPhotoUrl] = useState("");
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState("");
-  const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -48,9 +48,11 @@ const EditCaretakerProfile = () => {
           status: p.status || "active",
         });
         setCurrentPhotoUrl(p.photo?.url || "");
-      } catch (err) {
-        setLoadError(err.response?.data?.message || "Couldn't load your profile.");
-      } finally {
+      }
+       catch (err) {
+        toast.error(err.response?.data?.message || "Couldn't load your profile.");
+      } 
+      finally {
         setLoaded(true);
       }
     };
@@ -77,15 +79,11 @@ const EditCaretakerProfile = () => {
 
   const submit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    if (form.careType.length === 0) return setError("Select at least one care type.");
-    if (!/^\d{6}$/.test(form.pincode)) return setError("Pincode must be 6 digits.");
-
     setBusy(true);
+
     try {
       const fd = new FormData();
+
       fd.append("careType", JSON.stringify(form.careType));
       fd.append("about", form.about);
       fd.append("experienceYears", form.experienceYears || 0);
@@ -98,10 +96,13 @@ const EditCaretakerProfile = () => {
       if (photo) fd.append("profilePicture", photo);
 
       await api.patch("/caretakers/me/profile", fd);
-      setSuccess("Your profile has been updated.");
-    } catch (err) {
-      setError(err.response?.data?.message || "Couldn't update your profile.");
-    } finally {
+
+      toast.success("Your profile has been updated.");
+    }
+     catch (err) {
+      toast.error(err.response?.data?.message || "Couldn't update your profile.");
+    } 
+    finally {
       setBusy(false);
     }
   };
@@ -110,17 +111,14 @@ const EditCaretakerProfile = () => {
     return <p className="mx-auto max-w-2xl px-5 py-16 text-sm text-muted">Loading your profile…</p>;
   }
 
-  if (loadError) {
-    return <p className="mx-auto max-w-2xl px-5 py-16 text-sm text-rose-500">{loadError}</p>;
-  }
-
   return (
     <div className="mx-auto max-w-2xl px-5 py-12">
       <h1 className="font-display text-3xl">Edit your profile</h1>
 
       <form onSubmit={submit} className="mt-8 flex flex-col gap-6">
         <div>
-          <label className="label">Profile photo</label>
+
+        <label className="label">Profile photo</label>
           <div className="flex items-center gap-4">
             <div className="h-20 w-20 overflow-hidden rounded-full border border-line bg-teal-50">
               <img
@@ -135,7 +133,8 @@ const EditCaretakerProfile = () => {
             </div>
           </div>
         </div>
-
+        
+        {/* care type selection----> */}
         <div>
           <label className="label">Care type</label>
           <div className="flex gap-3">
@@ -165,28 +164,32 @@ const EditCaretakerProfile = () => {
           <label className="label">Years of experience</label>
           <input type="number" min="0" className="input w-32" value={form.experienceYears} onChange={update("experienceYears")} />
         </div>
-
+   
+      {/* full address */}
         <div>
           <label className="label">Full address</label>
           <textarea className="input" value={form.address} onChange={update("address")} />
         </div>
-
+         
+         {/* adress */}
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="label">City</label>
-            <input required className="input" value={form.city} onChange={update("city")} />
+            <input className="input" value={form.city} onChange={update("city")} />
           </div>
           <div>
             <label className="label">State</label>
-            <input required className="input" value={form.state} onChange={update("state")} />
+            <input className="input" value={form.state} onChange={update("state")} />
           </div>
           <div>
             <label className="label">Pincode</label>
-            <input required className="input" value={form.pincode} onChange={update("pincode")} placeholder="6 digits" />
+            <input className="input" value={form.pincode} onChange={update("pincode")} placeholder="6 digits" />
           </div>
         </div>
-
+         
+         {/* listing status and availability---> */}
         <div className="flex flex-wrap items-center gap-6">
+         
           <label className="flex items-center gap-2 text-sm text-ink">
             <input
               type="checkbox"
@@ -207,14 +210,13 @@ const EditCaretakerProfile = () => {
               <option value="paused">Paused (hidden)</option>
             </select>
           </label>
-        </div>
 
-        {error && <p className="text-sm text-rose-500">{error}</p>}
-        {success && <p className="text-sm text-teal-600">{success}</p>}
+        </div>
 
         <button type="submit" disabled={busy} className="btn btn-primary self-start">
           {busy ? "Saving…" : "Save changes"}
         </button>
+
       </form>
     </div>
   );

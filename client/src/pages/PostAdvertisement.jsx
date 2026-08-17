@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/axios.js"; 
 import { useAuth } from "../context/AuthContext.jsx";
+import { toast } from "react-toastify";
 
 const CARE_TYPE_OPTIONS = [
   ["elderly-care", "Elderly care"],
@@ -23,41 +24,63 @@ const PostAdvertisement = () => {
     pincode: "",
     isCurrentlyAvailable: true,
   });
+
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState("");
-  const [error, setError] = useState("");
+
   const [busy, setBusy] = useState(false);
 
-  const update = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  // for change value in form --->
+ const update = (key) => (e) => {
+  setForm((prev) => ({
+    ...prev,
+    [key]: e.target.value,
+  }));
+};
 
   const toggleCareType = (val) => {
+
     setForm((f) => ({
       ...f,
       careType: f.careType.includes(val)
         ? f.careType.filter((c) => c !== val)
         : [...f.careType, val],
     }));
+     
   };
 
   const handlePhoto = (e) => {
+
     const file = e.target.files[0];
+
     if (!file) return;
+
     setPhoto(file);
-    setPhotoPreview(URL.createObjectURL(file));
   };
+  
+  useEffect(() => {
+
+    if (!photo) {
+      setPhotoPreview("");
+      return;
+    }
+
+  const url = URL.createObjectURL(photo);
+  setPhotoPreview(url);
+
+  return () => {
+    URL.revokeObjectURL(url);
+  }
+
+}, [photo]);
 
   const submit = async (e) => {
     e.preventDefault();
-    setError("");
-
-    if (form.careType.length === 0) return setError("Select at least one care type.");
-    if (!photo) return setError("A profile photo is required.");
-    if (!/^\d{6}$/.test(form.pincode)) return setError("Pincode must be 6 digits.");
-
     setBusy(true);
+
     try {
       const fd = new FormData();
-      // the server's parseFormData middleware expects this as a JSON string
+      
       fd.append("careType", JSON.stringify(form.careType));
       fd.append("about", form.about);
       fd.append("experienceYears", form.experienceYears || 0);
@@ -66,40 +89,51 @@ const PostAdvertisement = () => {
       fd.append("state", form.state);
       fd.append("pincode", form.pincode);
       fd.append("isCurrentlyAvailable", form.isCurrentlyAvailable ? "true" : "");
-      fd.append("profilePicture", photo); // field name expected by upload.single("profilePicture")
+      fd.append("profilePicture", photo); 
 
       await api.post("/caretakers/advertise", fd);
       await refresh();
+
+      toast.success("Your caretaker profile was created successfully.");
+
       navigate("/");
-    } catch (err) {
-      setError(err.response?.data?.message || "Couldn't post your advertisement.");
-    } finally {
+    }
+     catch (err) {
+
+       toast.error(
+         err.response?.data?.message ||
+         "Couldn't create your caretaker profile."
+      );
+
+    } 
+    finally {
       setBusy(false);
     }
+
   };
 
   return (
     <div className="mx-auto max-w-2xl px-5 py-12">
       <h1 className="font-display text-3xl">Advertise your care services</h1>
-      <p className="mt-1 text-sm text-muted">
-        This creates your public caretaker profile. Families will see your
-        photo, city and rating right away — your phone number and full
-        address once they log in and open your profile.
-      </p>
 
       <form onSubmit={submit} className="mt-8 flex flex-col gap-6">
+
         <div>
           <label className="label">Profile photo (required)</label>
           <div className="flex items-center gap-4">
+
             <div className="h-20 w-20 overflow-hidden rounded-full border border-line bg-teal-50">
               {photoPreview && <img src={photoPreview} alt="" className="h-full w-full object-cover" />}
             </div>
+
             <input type="file" accept="image/*" onChange={handlePhoto} className="text-sm" />
           </div>
         </div>
-
+         
+         {/* care type selection */}
         <div>
           <label className="label">Care type</label>
+
           <div className="flex gap-3">
             {CARE_TYPE_OPTIONS.map(([val, label]) => (
               <button
@@ -119,7 +153,7 @@ const PostAdvertisement = () => {
         </div>
 
         <div>
-          <label className="label">About you</label>
+          <label    className="label">About you</label>
           <textarea className="input min-h-24" value={form.about} onChange={update("about")} />
         </div>
 
@@ -136,15 +170,15 @@ const PostAdvertisement = () => {
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="label">City</label>
-            <input required className="input" value={form.city} onChange={update("city")} />
+            <input className="input" value={form.city}  onChange={update("city")} />
           </div>
           <div>
             <label className="label">State</label>
-            <input required className="input" value={form.state} onChange={update("state")} />
+            <input className="input" value={form.state} onChange={update("state")} />
           </div>
           <div>
             <label className="label">Pincode</label>
-            <input required className="input" value={form.pincode} onChange={update("pincode")} placeholder="6 digits" />
+            <input className="input" value={form.pincode} onChange={update("pincode")} placeholder="6 digits" />
           </div>
         </div>
 
@@ -156,8 +190,6 @@ const PostAdvertisement = () => {
           />
           Currently available to take new bookings
         </label>
-
-        {error && <p className="text-sm text-rose-500">{error}</p>}
 
         <button type="submit" disabled={busy} className="btn btn-primary self-start">
           {busy ? "Posting…" : "Post advertisement"}

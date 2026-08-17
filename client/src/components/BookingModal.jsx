@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api } from "../api/axios";
+import { toast } from "react-toastify";
 
 const todayISO = () => new Date().toISOString().split("T")[0];
 
@@ -19,16 +20,23 @@ const BookingModal = ({ caretakerId, onClose, onSent }) => {
     }
     setBusy(true);
     setError("");
+
     try {
       await api.post(`/bookings/request/${caretakerId}`, {
         servicePeriod: { from, to },
         preferredTime,
         message,
       });
-      onSent?.();
-    } catch (err) {
-      setError(err.response?.data?.message || "Couldn't send the request.");
-    } finally {
+       toast.success("Booking request sent successfully!")
+       onSent?.();
+    }
+    catch (err) {
+      setError(err.response?.data?.message || "Couldn't send the request."); setError(
+      err.response?.data?.message ||
+      "Couldn't send the request."
+      ) 
+    } 
+    finally {
       setBusy(false);
     }
   };

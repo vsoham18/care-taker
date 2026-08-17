@@ -70,29 +70,12 @@ const Star = ({ type, id }) => {
 };
 
 
-const RatingStars = ({
-  value = 0,
-  onChange,
-  interactive = false,
-  count,
-}) => {
+const RatingStars = ({ value = 0, onChange, interactive = false, count}) => {
   const rating = Math.max(
     0,
     Math.min(5, Number(value) || 0)
   );
 
-  /*
-    Rating display rule:
-
-    0.0 - 0.2  → empty
-    0.3 - 0.7  → half
-    0.8 - 1.0  → full
-
-    Example:
-    4.2 → ★★★★☆
-    4.5 → ★★★★½
-    4.8 → ★★★★★
-  */
   const getStarType = (starNumber) => {
     const difference = rating - starNumber;
 
@@ -145,6 +128,7 @@ const RatingStars = ({
           {count > 0 && ` (${count})`}
         </span>
       )}
+      
     </div>
   );
 };

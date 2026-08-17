@@ -3,7 +3,7 @@ import { api } from "../api/axios.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useNavigate, useParams } from "react-router-dom";
 import RatingStars from "./RatingStars.jsx";
-
+import { toast } from "react-toastify";
 
 const PostReview = ({}) => {
    const navigate = useNavigate();
@@ -30,10 +30,16 @@ const submit = async (e) =>{
         rating, 
         comment: comment.trim() 
         });
+        
+      toast.success("Review posted successfully!");
+
        navigate("/my-bookings");
     } 
     catch (err) {
-      setError(err.response?.data?.message || "Couldn't post your review.");
+      toast.error(
+       err.response?.data?.message ||
+          "Couldn't post your review."
+       );
     }
      finally {
       setBusy(false);

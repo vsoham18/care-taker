@@ -55,7 +55,7 @@ const createReview = asyncHandler( async (req,res) =>{
    }
      
     //  RatingStats counts ---> 
-   const ratingStats = Review.aggregate([
+   const ratingStats = await Review.aggregate([
         {
           $match : {
             caretaker : caretaker._id 

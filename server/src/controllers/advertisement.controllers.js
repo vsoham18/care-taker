@@ -23,10 +23,21 @@ const createAdvertisement = asyncHandler(async (req, res) => {
   }
 
   let photo =  null;
+  
 
   if (req.file?.path) {
-    const uploadedImage = await uploadOnCloudinary(req.file.path);
 
+    const maxSize = 5 * 1024 * 1024;
+    if (req.file.size > maxSize) {
+      throw new ApiError(400, "Profile photo must be less than 5MB.");
+    }
+     
+    if (!req.file.mimetype.startsWith("image/")) {
+       throw new ApiError(400, "Only image files are allowed.");
+     }
+
+    const uploadedImage = await uploadOnCloudinary(req.file.path);
+        
     if (!uploadedImage) {
       throw new ApiError(500, "Could not upload the profile picture. Please try again.");
     }
@@ -37,9 +48,9 @@ const createAdvertisement = asyncHandler(async (req, res) => {
     };
   }
 
-  if (!photo?.url || !photo?.publicId) {
-    throw new ApiError(400, "Profile picture is required to create the advertisement.");
-  }
+ if (!req.file) {
+  throw new ApiError(400, "Profile photo is required.");
+}
 
   const { lat, lng } = await geocodeAddress({ city, state, pincode });
 

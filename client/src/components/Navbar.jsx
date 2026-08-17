@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { toast } from "react-toastify";
 
 const navLinkClass = ({ isActive }) =>
   `text-sm font-medium transition-colors ${
@@ -24,6 +25,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     await logout();
+    toast.success("You have successfully logged out.")
     setMenuOpen(false);
     navigate("/");
   };

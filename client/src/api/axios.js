@@ -19,13 +19,6 @@ const refreshToken = async () => {
     return refreshPromise;
 };
 
-api.interceptors.request.use(
-    (config) => {
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
-
 api.interceptors.response.use(
     (response) => response,
 
@@ -33,28 +26,25 @@ api.interceptors.response.use(
         const originalRequest = error.config;
 
         if (!originalRequest) {
-            return Promise.reject(error);
+            return Promise.reject(error); 
         }
 
         const isAuthRoute =
             originalRequest.url?.includes("/users/login") ||
             originalRequest.url?.includes("/users/register") ||
-            originalRequest.url?.includes("/users/refresh-token");
+            originalRequest.url?.includes("/users/refresh-token") ||
+            originalRequest.url?.includes("/users/me");
 
-        if (
-            error.response?.status === 401 &&
-            !originalRequest._retry &&
-            !isAuthRoute
-        ) {
-            originalRequest._retry = true;
+        if ( error.response?.status === 401 &&  !originalRequest._retry && !isAuthRoute ) {
+                originalRequest._retry = true;
 
-            try {
-                await refreshToken();
+                try {
+                    await refreshToken();
 
-                return api(originalRequest);
-            } catch (refreshError) {
-                return Promise.reject(refreshError);
-            }
+                    return api(originalRequest);
+                } catch (refreshError) {
+                    return Promise.reject(refreshError);
+                }
         }
 
         return Promise.reject(error);

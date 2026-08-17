@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { toast } from "react-toastify";
 // import OtpInput from "../components/OtpInput.jsx";
 
 const initial = { name: "", email: "", phone: "", password: "", confirmPassword: "" };
@@ -20,15 +21,22 @@ const Register = () => {
     setError("");
 
     // if (!phoneVerified) return setError("Please verify your phone number first.");
+    
     if (form.password !== form.confirmPassword) return setError("Passwords do not match.");
 
     setBusy(true);
     try {
       await register(form);
+      toast.success("Account created successfully!");
       navigate("/");
-    } catch (err) {
-      setError(err.response?.data?.message || "Couldn't create your account.");
-    } finally {
+    } 
+    catch (err) {
+       toast.error(
+       err.response?.data?.message ||
+          "Couldn't create your account."
+       );
+    } 
+    finally {
       setBusy(false);
     }
   };
@@ -44,18 +52,17 @@ const Register = () => {
       <form onSubmit={submit} className="mt-8 flex flex-col gap-4">
         <div>
           <label className="label">Full name</label>
-          <input required className="input" value={form.name} onChange={update("name")} />
+          <input className="input" value={form.name} onChange={update("name")} />
         </div>
         <div>
           <label className="label">Email</label>
-          <input type="email" required className="input" value={form.email} onChange={update("email")} />
+          <input type="email" className="input" value={form.email} onChange={update("email")} />
         </div>
 
-        <div>
+        <div> 
           <label className="label">Phone</label>
 
           <input
-            required
             className="input"
             placeholder="10-digit mobile number"
             value={form.phone}
@@ -73,11 +80,11 @@ const Register = () => {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="label">Password</label>
-            <input type="password" required minLength={6} className="input" value={form.password} onChange={update("password")} />
+            <input type="password" className="input" value={form.password} onChange={update("password")} />
           </div>
           <div>
             <label className="label">Confirm password</label>
-            <input type="password" required minLength={6} className="input" value={form.confirmPassword} onChange={update("confirmPassword")} />
+            <input type="password" className="input" value={form.confirmPassword} onChange={update("confirmPassword")} />
           </div>
         </div>
 

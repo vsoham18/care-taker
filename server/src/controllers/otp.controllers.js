@@ -70,7 +70,7 @@ export const verifyOTP = asyncHandler(async (req, res) => {
    
 if (otpRecord.attempts >= 5) {
     await OTP.deleteOne({ _id: otpRecord._id });
-    throw new ApiError(401, "Too many failed attempts. Please request a new OTP.");
+    throw new ApiError(400, "Too many failed attempts. Please request a new OTP.");
   }
 
   if (otpRecord.expiresAt < new Date()) {

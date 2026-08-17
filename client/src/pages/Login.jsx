@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const { login } = useAuth();
@@ -16,10 +17,16 @@ const Login = () => {
     setError("");
     try {
       await login(form);
-      navigate(location.state?.from?.pathname || "/");
-    } catch (err) {
-      setError(err.response?.data?.message || "Couldn't log in.");
-    } finally {
+       toast.success("Logged in successfully!");
+       navigate(location.state?.from?.pathname || "/");
+    } 
+    catch (err) {
+      toast.error(
+        err.response?.data?.message ||
+        "Couldn't log you in."
+      );
+    } 
+    finally {
       setBusy(false);
     }
   };
@@ -34,23 +41,22 @@ const Login = () => {
           <label className="label">Email</label>
           <input
             type="email"
-            required
             className="input"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
         </div>
+        
         <div>
           <label className="label">Password</label>
           <input
             type="password"
-            required
             className="input"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
           />
         </div>
-        {error && <p className="text-sm text-rose-500">{error}</p>}
+
         <button type="submit" disabled={busy} className="btn btn-primary mt-2">
           {busy ? "Logging in…" : "Log in"}
         </button>

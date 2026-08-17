@@ -20,10 +20,12 @@ export const AuthProvider = ({ children }) => {
 
             setUser(data.data.user);
         } catch (error) {
-            console.error("Failed to fetch current user:", error);
-
-            setUser(null);
-        } finally {
+           if (error.response?.status === 401) {
+                setUser(null);
+            } else {
+                console.error("Failed to fetch current user:", error);
+            }
+        } finally { 
             setLoading(false);
         }
     }, []);
@@ -59,7 +61,7 @@ export const AuthProvider = ({ children }) => {
         });
 
         setUser(data.data.user);
-
+         console.log(data.data)
         return data.data.user;
     };
 
@@ -79,7 +81,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         refreshUser,
     };
-
+ 
     return (
         <AuthContext.Provider value={value}>
             {children}

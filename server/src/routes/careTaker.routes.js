@@ -17,6 +17,7 @@ const router = Router();
 router.route("/").get( listCaretakerProfiles );
 router.route("/:id").get( getCaretakerProfile );
 router.route("/me/profile").get(verifyJwt, getMyCaretakerProfile);
+
 router.route("/advertise").post(verifyJwt, upload.single("profilePicture"), parseFormData, validate(createCaretakerProfileSchema), createAdvertisement);
 router.route("/me/profile").patch(verifyJwt, upload.single("profilePicture"), parseFormData, validate(updateCaretakerProfileSchema), updateMyCaretakerProfile);
 

@@ -202,7 +202,8 @@ const Home = () => {
       </div>
       
       {/* loading and error showing section ----> */}
-        {loading ? (
+        {
+        loading ? (
           <p className="text-sm text-muted">Loading caretakers…</p>
         ) : error ? (
           <p className="text-sm text-rose-500">{error}</p>
@@ -217,7 +218,8 @@ const Home = () => {
               <CaretakerCard key={p._id} profile={p} />
             ))}
           </div>
-        )}
+        )
+        }
 
 
         {pages > 1 && (

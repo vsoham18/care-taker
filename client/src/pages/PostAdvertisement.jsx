@@ -11,7 +11,7 @@ const CARE_TYPE_OPTIONS = [
 ];
 
 const PostAdvertisement = () => {
-  const { refresh } = useAuth();
+  const { refreshUser } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -88,18 +88,18 @@ const PostAdvertisement = () => {
       fd.append("city", form.city);
       fd.append("state", form.state);
       fd.append("pincode", form.pincode);
-      fd.append("isCurrentlyAvailable", form.isCurrentlyAvailable ? "true" : "");
+      fd.append("isCurrentlyAvailable", form.isCurrentlyAvailable ? "true" : "false");
       fd.append("profilePicture", photo); 
 
       await api.post("/caretakers/advertise", fd);
-      await refresh();
-
+      
       toast.success("Your caretaker profile was created successfully.");
+      await refreshUser();
 
       navigate("/");
-    }
+    } 
      catch (err) {
-
+         
        toast.error(
          err.response?.data?.message ||
          "Couldn't create your caretaker profile."

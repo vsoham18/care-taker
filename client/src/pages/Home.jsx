@@ -13,7 +13,7 @@ const CARE_TYPES = [
 ];
 
 const Home = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [profiles, setProfiles] = useState([]);
   
   const [page, setPage] = useState(1);
@@ -35,7 +35,7 @@ const Home = () => {
    
    //  location permisson----->
         useEffect(() => {
-
+           
           if (!("geolocation" in navigator)) {
             setLocationStatus("unsupported");
             return;
@@ -64,6 +64,7 @@ const Home = () => {
       if (locationStatus === "idle" || locationStatus === "asking") return;
 
       const load = async () => {
+      
         setLoading(true);
         setError("");
         try {
@@ -79,13 +80,19 @@ const Home = () => {
               careType: careType || undefined,
             },
           });
-          
           setProfiles(data?.data?.profiles || []);
+         
           setPages(data?.data?.totalPages || 1);
         }
-         catch (err) {
+        catch (err) {
+          console.error("Failed to load caretakers:", err);
+
           setProfiles([]);
-          setError("Couldn't reach the server. Make sure the Aya API is running.");
+
+          setError(
+            err.response?.data?.message ||
+            "Couldn't load caretakers."
+          );
         } 
         finally {
           setLoading(false);
@@ -94,7 +101,6 @@ const Home = () => {
 
       load();
     }, [locationStatus, coords, page, filters, careType]);
-
 
   return (
     <div>

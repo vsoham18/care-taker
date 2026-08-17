@@ -16,16 +16,19 @@ export const AuthProvider = ({ children }) => {
 
     const refreshUser = useCallback(async () => {
         try {
+            
             const { data } = await api.get("/users/me");
 
             setUser(data.data.user);
-        } catch (error) {
+        } 
+        catch (error) {
            if (error.response?.status === 401) {
                 setUser(null);
             } else {
                 console.error("Failed to fetch current user:", error);
             }
-        } finally { 
+        } 
+        finally { 
             setLoading(false);
         }
     }, []);

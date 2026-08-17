@@ -22,20 +22,26 @@ const createAdvertisement = asyncHandler(async (req, res) => {
     throw new ApiError(409, "You already have a caretaker advertisement created.");
   }
 
+   if (!req.file) {
+  throw new ApiError(400, "Profile photo is required.");
+   }
+
   let photo =  null;
   
+    if (req.file.size > 5 * 1024 * 1024) {
+    throw new ApiError(
+      400,
+      "Profile photo must be less than 5MB."
+    );
+  }
 
-  if (req.file?.path) {
-
-    const maxSize = 5 * 1024 * 1024;
-    if (req.file.size > maxSize) {
-      throw new ApiError(400, "Profile photo must be less than 5MB.");
-    }
+  if (!req.file.mimetype.startsWith("image/")) {
+    throw new ApiError(
+      400,
+      "Only image files are allowed."
+    );
+  }
      
-    if (!req.file.mimetype.startsWith("image/")) {
-       throw new ApiError(400, "Only image files are allowed.");
-     }
-
     const uploadedImage = await uploadOnCloudinary(req.file.path);
         
     if (!uploadedImage) {
@@ -46,11 +52,7 @@ const createAdvertisement = asyncHandler(async (req, res) => {
       url: uploadedImage.secure_url,
       publicId: uploadedImage.public_id,
     };
-  }
-
- if (!req.file) {
-  throw new ApiError(400, "Profile photo is required.");
-}
+  
 
   const { lat, lng } = await geocodeAddress({ city, state, pincode });
 

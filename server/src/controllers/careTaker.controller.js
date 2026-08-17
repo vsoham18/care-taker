@@ -126,6 +126,8 @@ const listCaretakerProfiles = asyncHandler(async (req, res) => {
     CaretakerProfile.aggregate(pipeline),
     CaretakerProfile.countDocuments(matchQuery),
   ]);
+  
+ const totalPages = Math.max(1, Math.ceil(total / limit));
 
   return res.status(200).json(
     new ApiResponse(
@@ -135,7 +137,7 @@ const listCaretakerProfiles = asyncHandler(async (req, res) => {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit),
+        totalPages,
         hasMore: page < Math.ceil(total / limit),
       },
       "Caretakers fetched successfully."

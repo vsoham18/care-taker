@@ -85,8 +85,6 @@ const Home = () => {
           setPages(data?.data?.totalPages || 1);
         }
         catch (err) {
-          console.error("Failed to load caretakers:", err);
-
           setProfiles([]);
 
           setError(

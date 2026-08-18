@@ -62,12 +62,16 @@ const EditCaretakerProfile = () => {
   const update = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   const toggleCareType = (val) => {
-    setForm((f) => ({
-      ...f,
-      careType: f.careType.includes(val)
-        ? f.careType.filter((c) => c !== val)
-        : [...f.careType, val],
-    }));
+    setForm((prev) => {
+      const selected = prev.careType.includes(val)
+        ? prev.careType.filter((item) => item !== val)
+        : [val];
+
+      return {
+        ...prev,
+        careType: selected,
+      };
+    });
   };
 
   const handlePhoto = (e) => {
@@ -120,6 +124,7 @@ const EditCaretakerProfile = () => {
 
         <label className="label">Profile photo</label>
           <div className="flex items-center gap-4">
+
             <div className="h-20 w-20 overflow-hidden rounded-full border border-line bg-teal-50">
               <img
                 src={photoPreview || currentPhotoUrl}
@@ -127,10 +132,17 @@ const EditCaretakerProfile = () => {
                 className="h-full w-full object-cover"
               />
             </div>
+
             <div>
-              <input type="file" accept="image/*" onChange={handlePhoto} className="text-sm" />
+               <label htmlFor="profilePicture" className="btn btn-primary cursor-pointer" >
+                     Choose profile photo
+               </label> 
+
+              <input id="profilePicture" type="file" accept="image/*" onChange={handlePhoto} className="hidden" />
+
               <p className="mt-1 text-xs text-muted">Leave blank to keep your current photo.</p>
             </div>
+            
           </div>
         </div>
         

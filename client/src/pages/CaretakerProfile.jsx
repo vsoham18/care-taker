@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { api } from "../api/axios.js"; 
 import { useAuth } from "../context/AuthContext.jsx";
 import RatingStars from "../components/RatingStars.jsx";
@@ -27,6 +27,8 @@ const CaretakerProfile = () => {
   const [showBooking, setShowBooking] = useState(false);
   const [sentMessage, setSentMessage] = useState("");
   const [error, setError] = useState("");
+   
+   const navigate = useNavigate()
 
   const loadProfile = async () => {
     try {
@@ -155,9 +157,9 @@ const CaretakerProfile = () => {
               {sentMessage && <p className="mt-2 text-sm text-teal-600">{sentMessage}</p>}
 
             </div>
-          ) : (<div className="text-sm text-muted">
+          ) : (<Link to={"/login"} className="btn btn-secondary mt-6 inline-flex">
                  login to request for a booking 
-            </div>)}
+            </Link>)}
 
         </div>
 
@@ -179,6 +181,7 @@ const CaretakerProfile = () => {
             setShowBooking(false);
             setSentMessage("Request sent — the caretaker will call you to confirm.");
             loadMyBookings();
+            navigate("/my-bookings")
           }}
         />
       )}

@@ -39,14 +39,16 @@ const PostAdvertisement = () => {
 };
 
   const toggleCareType = (val) => {
+    setForm((prev) => {
+      const selected = prev.careType.includes(val)
+        ? prev.careType.filter((item) => item !== val)
+        : [val];
 
-    setForm((f) => ({
-      ...f,
-      careType: f.careType.includes(val)
-        ? f.careType.filter((c) => c !== val)
-        : [...f.careType, val],
-    }));
-     
+      return {
+        ...prev,
+        careType: selected,
+      };
+    });
   };
 
   const handlePhoto = (e) => {
@@ -121,12 +123,17 @@ const PostAdvertisement = () => {
         <div>
           <label className="label">Profile photo (required)</label>
           <div className="flex items-center gap-4">
-
-            <div className="h-20 w-20 overflow-hidden rounded-full border border-line bg-teal-50">
+         
+          {/* photo preview circle---> */}
+          <div className="h-20 w-20 overflow-hidden rounded-full border border-line bg-teal-50">
               {photoPreview && <img src={photoPreview} alt="" className="h-full w-full object-cover" />}
-            </div>
+          </div>
+            
+            <label htmlFor="profilePicture"    className="btn btn-primary cursor-pointer">
+                Choose profile photo
+              </label>
+            <input  id="profilePicture" type="file" accept="image/*" onChange={handlePhoto} className="hidden" />
 
-            <input type="file" accept="image/*" onChange={handlePhoto} className="text-sm" />
           </div>
         </div>
          
@@ -194,7 +201,9 @@ const PostAdvertisement = () => {
         <button type="submit" disabled={busy} className="btn btn-primary self-start">
           {busy ? "Posting…" : "Post advertisement"}
         </button>
+
       </form>
+
     </div>
   );
 };

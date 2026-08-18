@@ -8,7 +8,7 @@ This repository contains the version-one release of the application, with a Reac
 
 - User registration, login, logout, and persistent authentication
 - Public caretaker discovery and individual caretaker profiles
-- Caretaker advertisements with profile information, availability, pricing, and images
+- Caretaker advertisements with profile information, availability, and images
 - Location-aware caretaker profiles through address geocoding
 - Booking creation and booking management
 - Separate booking views for a user's bookings and caretaker requests
@@ -42,9 +42,57 @@ care-taker/
 
 **Backend:** Node.js, Express, MongoDB, Mongoose, JWT, bcryptjs, Zod, Multer, Cloudinary
 
+## Architecture
+
+The application follows a client-server architecture.
+
+- React handles the frontend UI and client-side routing.
+- Axios communicates with the Express REST API.
+- Express controllers handle request processing and business logic.
+- MongoDB and Mongoose store users, caretaker profiles, bookings, and reviews.
+- JWT access and refresh tokens handle authentication.
+- Access and refresh tokens are stored in HTTP-only cookies to reduce exposure to client-side JavaScript.
+- Cloudinary handles profile and advertisement image uploads.
+- Geocoding converts caretaker addresses into geographic coordinates for location-based discovery.
+
+## Main Data Models
+
+The backend is organized around four main data models:
+
+- **User:** Stores account details, contact information, authentication-related data, and user role information..
+- **CaretakerProfile:** Stores caretaker services, availability, profile details, images, and location data.
+- **Booking:** Connects a user with a caretaker and tracks booking details and status.
+- **Review:** Stores ratings and feedback associated with a completed booking and caretaker.
+
+The relationships between the models can be summarized as follows:
+
+```text
+User
+├── CaretakerProfile (optional)
+└── Bookings
+
+CaretakerProfile
+├── Bookings
+└── Reviews
+
+Booking
+└── Review
+```
+A booking connects a user with a caretaker profile, while a review is associated with a completed booking and its caretaker.
+
+## Authentication
+
+Authentication uses JWT access and refresh tokens stored in HTTP-only cookies.
+
+- Access tokens are short-lived and are used to authorize protected API requests.
+- Refresh tokens are used to obtain a new access token when the current one expires.
+- Protected API routes validate the access token through authentication middleware.
+- - The Axios response interceptor handles access-token refresh for protected API requests when required.
+- Cookies are sent with API requests through credentialed CORS configuration.
+
 ## Requirements
 
-- Node.js 18 or newer
+- Node.js 18+
 - npm
 - A MongoDB database
 - A Cloudinary account for image uploads

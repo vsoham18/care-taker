@@ -13,7 +13,7 @@ import Register from "./pages/Register.jsx";
 import CaretakerProfile from "./pages/CaretakerProfile.jsx";
 import PostAdvertisement from "./pages/PostAdvertisement.jsx";
 import EditCaretakerProfile from "./pages/EditCaretakerProfile.jsx";
-import MyBookings from "./pages/MyBookings.jsx";
+import MyBookings from "./pages/Mybookings.jsx";
 import Requests from "./pages/Requests.jsx";
 import Account from "./pages/Account.jsx";
 import NotFound from "./pages/NotFound.jsx";

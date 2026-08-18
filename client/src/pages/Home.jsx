@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api/axios.js";
-import CaretakerCard from "../components/CaretakerCard.jsx";
+import CaretakerCard from "../components/careTakerCard.jsx";
 import FilterBar from "../components/FilterBar.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 

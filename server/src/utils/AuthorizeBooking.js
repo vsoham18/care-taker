@@ -1,5 +1,5 @@
 import { Booking } from "../models/bookings.models.js";
-import { CaretakerProfile } from "../models/careTakerProfiles.models.js";
+import { CaretakerProfile } from "../models/caretakerprofiles.models.js";
 import { ApiError } from "./ApiError.js";
 
 async function findAuthorizedBooking(bookingId, userId) {

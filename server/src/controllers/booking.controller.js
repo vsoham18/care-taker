@@ -1,6 +1,6 @@
 import { Booking } from "../models/bookings.models.js";
 import { User } from "../models/users.models.js";
-import { CaretakerProfile } from "../models/careTakerProfiles.models.js";
+import { CaretakerProfile } from "../models/caretakerprofiles.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";

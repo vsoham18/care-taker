@@ -4,7 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Review } from "../models/review.models.js";
-import { CaretakerProfile } from "../models/careTakerProfiles.models.js";
+import { CaretakerProfile } from "../models/caretakerprofiles.models.js";
 
 const createReview = asyncHandler( async (req,res) =>{
      const bookingId = req.params.bookingId;

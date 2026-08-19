@@ -43,7 +43,8 @@ const CaretakerProfile = () => {
     try {
       const { data } = await api.get(`/review/${id}`);
       setRatings(data.data || []);
-    } catch (err) {
+    } 
+    catch (err) {
       // non-fatal 
     }
   };

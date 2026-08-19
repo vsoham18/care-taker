@@ -2,40 +2,265 @@ import { useState } from "react";
 import { api } from "../api/axios.js";
 import RatingStars from "./RatingStars.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
+import { toast } from "react-toastify";
+import { formatDistanceToNow } from "date-fns";
+
+const FIFTEEN_MINUTES = 15 * 60 * 1000;
 
 const CommentSection = ({ ratings }) => {
-  const { user } = useAuth() ;
-  const [rating, setRating] = useState(5);
+  const { user } = useAuth();
+
+  const [reviews, setReviews] = useState(ratings || []);
+
+  const [busy, setBusy] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+   
+  const [editingId, setEditingId] = useState(null);
+  const [editRating, setEditRating] = useState(0);
+  const [editComment, setEditComment] = useState("");
+  
+
+  const isOwner = (review) => {
+    return review?.user === user?._id;
+  };
+
+  const canEdit = (review) => {
+
+    if (!isOwner(review)) return false;
+
+    const age = Date.now() - new Date(review.createdAt).getTime();
+
+    return age <= FIFTEEN_MINUTES;
+  };
+
+  const handleEdit = (review) => {
+    if (!canEdit(review)) {
+      toast.error("This review can no longer be edited.");
+      return;
+    }
+
+    setEditingId(review._id);
+    setEditRating(review.rating);
+    setEditComment(review.comment || "");
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditRating(0);
+    setEditComment("");
+  };
+
+  const saveEdit = async (reviewId) => {
+    if (!editRating) {
+      toast.error("Please select a rating.");
+      return;
+    }
+
+    setBusy(true);
+
+    try {
+      const { data } = await api.patch(
+        `/review/update/${reviewId}`,
+        {
+          rating: editRating,
+          comment: editComment,
+        }
+      );
+
+      const updatedReview = data.data.review;
+
+      setReviews((prev) =>
+        prev.map((review) =>
+          review._id === reviewId
+            ? {
+                ...review,
+                ...updatedReview,
+              }
+            : review
+        )
+      );
+
+      setEditingId(null);
+      setEditRating(0);
+      setEditComment("");
+
+      toast.success("Review updated successfully.");
+    } 
+    catch (err) {
+      toast.error(
+        err.response?.data?.message ||
+          "Couldn't update the review."
+      );
+    } 
+    finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDelete = async (reviewId) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this review?"
+    );
+
+    if (!confirmed) return;
+
+    setDeletingId(reviewId);
+
+    try {
+      await api.delete(`/review/delete/${reviewId}`);
+
+      setReviews((prev) =>
+        prev.filter((review) => review._id !== reviewId)
+      );
+
+      toast.success("Review deleted successfully.");
+    } 
+    catch (err) {
+      toast.error(
+        err.response?.data?.message ||
+          "Couldn't delete the review."
+      );
+    } 
+    finally {
+      setDeletingId(null);
+    }
+  }; 
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="font-display text-xl">What families are saying</h3>
+        <h3 className="font-display text-xl">
+          What families are saying
+        </h3>
       </div>
 
-
-   {/* Display the reviews-----> */}
-      {ratings?.length ? (
+     {reviews?.length ? (
         <ul className="flex flex-col gap-4">
+        
+          {/* comment-card --->  */}
+          {reviews.map((r) => (
+            <li
+              key={r._id}
+              className="card p-4"
+            >
+                 
+                 {/* name and rating */}
+              <div className="mb-1 flex items-center justify-between gap-3">
 
-          {ratings.map((r) => (
-            <li key={r._id} className="card p-4">
+                 <div className="flex items-center gap-2">
 
-              <div className="mb-1 flex items-center justify-between">
-                <span className="text-sm font-semibold text-ink">{r.reviewer?.name}</span>
-                <RatingStars value={r.rating} />
+                    <span className="text-sm font-semibold text-ink">
+                      {r.reviewer?.name}
+                    </span>
+                    
+                      {/* timeStamp and edited mark --->  */}
+                   <span className="text-xs text-muted">
+                      {formatDistanceToNow(new Date(r.createdAt), {
+                        addSuffix: true,
+                      })}
+                    
+                    {new Date(r.updatedAt).getTime() > new Date(r.createdAt).getTime() && (
+                            <>
+                            <span className="mx-1 text-sm">•</span>
+                            edited
+                            </>
+                    )}
+                   </span>
+
+                </div>
+
+                {editingId !== r._id && (
+                  <RatingStars value={r.rating} />
+                )}
+
               </div>
+                
+                {/* edit and delete option---> */}
+             {editingId !== r._id ? (
+                <>
+                  {r.comment && (
+                    <p className="text-sm text-muted">
+                      {r.comment}
+                    </p>
+                  )}
 
-              {r.comment && <p className="text-sm text-muted">{r.comment}</p>}
+                  {isOwner(r) && (
+                    <div className="mt-3 flex items-center gap-3">
+
+                      {canEdit(r) && (
+                        <button
+                          type="button"
+                          onClick={() => handleEdit(r)}
+                          className="text-xs font-medium text-teal-600 hover:text-teal-700"
+                        >
+                          Edit
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(r._id)}
+                        disabled={deletingId === r._id}
+                        className="text-xs font-medium text-rose-500 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {deletingId === r._id
+                          ? "Deleting..."
+                          : "Delete"}
+                      </button>
+
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* edit form in the place of orginal review sectio */
+                <div className="mt-3 flex flex-col gap-3">
+
+                  <RatingStars
+                    value={editRating}
+                    onChange={setEditRating}
+                    interactive
+                  />
+
+                  <textarea
+                    className="input min-h-20 text-sm"
+                    value={editComment}
+                    onChange={(e) =>
+                      setEditComment(e.target.value)
+                    }
+                    maxLength={1000}
+                  />
+
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => saveEdit(r._id)}
+                      disabled={busy}
+                      className="btn btn-primary text-sm"
+                    >
+                      {busy ? "Saving..." : "Save"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={cancelEdit}
+                      disabled={busy}
+                      className="btn btn-ghost text-sm"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+
+                </div>
+              )}
 
             </li>
-          ))}
 
+          ))}
         </ul>
       ) : (
         <p className="text-sm text-muted">
-          No reviews yet — reviews appear here once a booked family shares
-          feedback.
+          No reviews yet — reviews appear here once a booked
+          family shares feedback.
         </p>
       )}
     </div>

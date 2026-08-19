@@ -6,6 +6,47 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { Review } from "../models/review.models.js";
 import { CaretakerProfile } from "../models/caretakerprofiles.models.js";
 
+const updateCaretaker = async(caretakerId) =>{
+      //  check for careTaker existing ---->
+    const caretaker = await CaretakerProfile.findById(caretakerId )
+
+    if (!caretaker) {
+    throw new ApiError(404, "Caretaker profile not found.");
+   }
+     
+    //  RatingStats counts ---> 
+   const ratingStats = await Review.aggregate([
+        {
+          $match : {
+            caretaker : caretaker._id 
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            ratingCount: { $sum: 1 },
+            ratingAvg: { $avg: "$rating" },
+           },
+        },
+   ])
+    
+    const stats = ratingStats[0] || {
+    ratingCount: 0,
+    ratingAvg: 0,
+   }
+     
+  //   update careTakerProfile ---> 
+    await CaretakerProfile.findByIdAndUpdate(
+        caretakerId,
+        {
+        $set: {
+            ratingCount: stats.ratingCount,
+            ratingAvg: Number(stats.ratingAvg.toFixed(1)),
+             },
+        }
+    );
+}
+
 const createReview = asyncHandler( async (req,res) =>{
      const bookingId = req.params.bookingId;
 
@@ -46,49 +87,7 @@ const createReview = asyncHandler( async (req,res) =>{
     booking.hasBeenRated = true;
      await booking.save();
     
-    //  check for careTaker existing ---->
-    const caretaker = await CaretakerProfile.findById(
-        booking.caretaker
-    )
-    if (!caretaker) {
-    throw new ApiError(404, "Caretaker profile not found.");
-   }
-     
-    //  RatingStats counts ---> 
-   const ratingStats = await Review.aggregate([
-        {
-          $match : {
-            caretaker : caretaker._id 
-          }
-        },
-        {
-          $group: {
-            _id: null,
-            ratingCount: { $sum: 1 },
-            ratingAvg: { $avg: "$rating" },
-           },
-        },
-   ])
-    
-    const stats = ratingStats[0] || {
-    ratingCount: 0,
-    ratingAvg: 0,
-   }
-     
-  //   update careTakerProfile ---> 
-    await CaretakerProfile.findByIdAndUpdate(
-        booking.caretaker,
-        {
-        $set: {
-            ratingCount: stats.ratingCount,
-            ratingAvg: Number(stats.ratingAvg.toFixed(1)),
-             },
-        },
-        {
-        new: true,
-        }
-    );
-
+   await updateCaretaker(booking.caretaker)
 
     return res.status(201).json(
         new ApiResponse(
@@ -134,10 +133,13 @@ const getReview =  asyncHandler( async (req,res) =>{
         },
         {
             $project: {
-                    "reviewer.name": 1,
+                   "reviewer.name": 1,
+                    user : 1,
+                    booking : 1,
                     comment: 1,
                     rating: 1,
-                    createdAt: 1
+                    createdAt: 1,
+                    updatedAt:1
              }
          }
      ])
@@ -152,4 +154,90 @@ const getReview =  asyncHandler( async (req,res) =>{
 
 })
 
-export { createReview , getReview }
+const updateReview = asyncHandler( async(req, res) =>{
+     const reviewId = req.params.reviewId 
+
+     const { rating, comment } = req.body 
+        
+     const review = await Review.findById(reviewId)
+
+    if (!review) {
+        throw new ApiError(404, "Review not found.");
+    }
+    
+    if (!review.user.equals(req.user._id)) {
+        throw new ApiError(
+            403,
+            "You can't delete another user's review."
+        );
+    }
+
+    const age = Date.now() - review.createdAt.getTime();
+
+    const FIFTEEN_MINUTES = 15 * 60 * 1000;
+
+    if (age > FIFTEEN_MINUTES) {
+    throw new ApiError(
+        403,
+        "Reviews can only be edited within 15 minutes."
+    );
+    }
+    
+    const updatedReview = await Review.findByIdAndUpdate(
+        reviewId,
+        {
+            $set:{
+                rating ,
+                comment  
+            },
+        },
+        {
+           returnDocument: "after",
+            runValidators: true,
+        }
+     )
+   
+     await updateCaretaker(review.caretaker)
+     
+     return res.status(200).json(
+         new ApiResponse (
+             200, 
+            {
+                 review:updatedReview
+            } ,
+             "Review updated successfully."
+        ))
+})
+
+const deleteReview = asyncHandler(async (req, res) => {
+    const { reviewId } = req.params;
+
+    const review = await Review.findById(reviewId);
+
+    if (!review) {
+        throw new ApiError(404, "Review not found.");
+    }
+
+    if (!review.user.equals(req.user._id)) {
+        throw new ApiError(
+            403,
+            "You can't delete another user's review."
+        );
+    }
+
+    const caretakerId = review.caretaker;
+
+    await Review.findByIdAndDelete(reviewId);
+
+    await updateCaretaker(caretakerId);
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            null,
+            "Review deleted successfully."
+        )
+    );
+});
+
+export { createReview , getReview, updateReview, deleteReview }

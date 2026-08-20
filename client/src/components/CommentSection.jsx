@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { api } from "../api/axios.js";
 import RatingStars from "./RatingStars.jsx";
-import { useAuth } from "../context/AuthContext.jsx";
-import { toast } from "react-toastify";
-import { formatDistanceToNow } from "date-fns";
-
+import { useAuth } from "../context/AuthContext.jsx" ;
+import { toast } from "react-toastify" ;
+import { formatDistanceToNow } from "date-fns" ;
+import ReportModal from "./reportModal.jsx" ; 
+ 
 const FIFTEEN_MINUTES = 15 * 60 * 1000;
 
-const CommentSection = ({ ratings }) => {
+const CommentSection = ({ ratings, caretakerUserId }) => {
   const { user } = useAuth();
 
   const [reviews, setReviews] = useState(ratings || []);
@@ -19,10 +20,13 @@ const CommentSection = ({ ratings }) => {
   const [editRating, setEditRating] = useState(0);
   const [editComment, setEditComment] = useState("");
   
+  const [reportReviewId, setReportReviewId] = useState(null) 
 
   const isOwner = (review) => {
     return review?.user === user?._id;
   };
+
+  const isCaretakerOwner = user?._id === caretakerUserId;
 
   const canEdit = (review) => {
 
@@ -183,7 +187,8 @@ const CommentSection = ({ ratings }) => {
                       {r.comment}
                     </p>
                   )}
-
+                     
+               {/* check the owner of the comments to show their individual edit and delete option --->*/}
                   {isOwner(r) && (
                     <div className="mt-3 flex items-center gap-3">
 
@@ -210,6 +215,33 @@ const CommentSection = ({ ratings }) => {
 
                     </div>
                   )}
+                      
+                {isCaretakerOwner && (
+                      <button
+                      type="button"
+                      onClick={() => setReportReviewId(r._id)}
+                      className="
+                        rounded-md border border-line
+                        px-1 py-1 my-3 
+                        text-[11px] text-muted
+                        transition
+                        hover:border-rose-200
+                        hover:bg-rose-50
+                        hover:text-rose-500
+                      "
+                    >
+                     
+                      <svg
+                        viewBox="0 0 20 20"
+                        className="h-3.5 w-3"
+                        fill="currentColor"
+                      >
+                        <path d="M10 2a8 8 0 1 0 8 8 8 8 0 0 0-8-8Zm0 11.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm1-2.5H9V5h2v6Z" />
+                      </svg>
+
+                      </button>
+                    )}
+
                 </>
               ) : (
                 /* edit form in the place of orginal review sectio */
@@ -263,6 +295,15 @@ const CommentSection = ({ ratings }) => {
           family shares feedback.
         </p>
       )}
+
+          {reportReviewId && (
+            <ReportModal
+              targetType="review"
+              targetId={reportReviewId}
+              onClose={() => setReportReviewId(null)}
+            />
+        )}
+
     </div>
   );
 };

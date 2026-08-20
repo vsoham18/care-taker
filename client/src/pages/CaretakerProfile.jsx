@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import RatingStars from "../components/RatingStars.jsx";
 import BookingModal from "../components/BookingModal.jsx";
 import CommentSection from "../components/CommentSection.jsx";
-import MyBookings from "./Mybookings.jsx";
+import ReportModal from "../components/reportModal.jsx";
 
 const careTypeLabel = {
   "elderly-care": "Elderly care",
@@ -27,8 +27,11 @@ const CaretakerProfile = () => {
   const [showBooking, setShowBooking] = useState(false);
   const [sentMessage, setSentMessage] = useState("");
   const [error, setError] = useState("");
-   
-   const navigate = useNavigate()
+  const [showReport, setShowReport] = useState(false);
+
+  const navigate = useNavigate()
+  
+  // const isCaretakerOwner = user?._id === profile.user;
 
   const loadProfile = async () => {
     try {
@@ -55,7 +58,7 @@ const CaretakerProfile = () => {
     loadReviews(); 
     if (user) {
     loadMyBookings();
-  }
+    }
   }, [id,user]);
   
   const loadMyBookings = async () => {
@@ -102,12 +105,40 @@ const CaretakerProfile = () => {
           {/* profile name and care type section  */}
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
+                 <div className="flex justify-center items-center gap-3">
 
-              <h1 className="font-display text-3xl">{profile.userDetails?.name}</h1>
+                  <h1 className="font-display text-3xl">{profile.userDetails?.name}</h1>
+
+                    {
+                      !(user?._id === profile.user) && ( 
+                        <button
+                            type="button"
+                            onClick={() => setShowReport(true)}
+                            className="rounded-md border border-line
+                                  px-0.5 py-0.5 mb-1.5
+                                  text-[11px] text-muted
+                                  transition
+                                  hover:border-rose-200
+                                  hover:bg-rose-50
+                                  hover:text-rose-500"
+                              >
+                              <svg
+                                  viewBox="0 0 20 20"
+                                  className="h-2.5 2-3"
+                                  fill="currentColor"
+                                >
+                                  <path d="M10 2a8 8 0 1 0 8 8 8 8 0 0 0-8-8Zm0 11.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm1-2.5H9V5h2v6Z" />
+                                </svg>
+                      </button>)
+                    } 
+
+                 </div>
+
               <p className="mt-1 text-sm text-muted">
                 {profile.careType?.map((c) => careTypeLabel[c] || c).join(" · ")} ·{" "}
                 {profile.experienceYears || 0}+ yrs experience
               </p>
+
             </div>
 
             <RatingStars value={profile.ratingAvg} count={profile.ratingCount} />
@@ -156,12 +187,12 @@ const CaretakerProfile = () => {
               ) }
 
               {sentMessage && <p className="mt-2 text-sm text-teal-600">{sentMessage}</p>}
-
+ 
             </div>
           ) : (<Link to={"/login"} className="btn btn-secondary mt-6 inline-flex">
                  login to request for a booking 
             </Link>)}
-
+           
         </div>
 
       </div>
@@ -170,6 +201,7 @@ const CaretakerProfile = () => {
       <div className="mt-10">
         <CommentSection
           ratings={ratings}
+          caretakerUserId={profile.user}
         />
       </div>
      
@@ -185,6 +217,15 @@ const CaretakerProfile = () => {
             navigate("/my-bookings")
           }}
         />
+      )}
+  
+  {/* report model ----> */}
+      {showReport && (
+          <ReportModal
+            targetType="caretaker"
+            targetId={profile._id}
+            onClose={() => setShowReport(false)}
+          />
       )}
 
     </div>

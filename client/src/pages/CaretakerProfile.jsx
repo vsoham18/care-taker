@@ -5,13 +5,13 @@ import { useAuth } from "../context/AuthContext.jsx";
 import RatingStars from "../components/RatingStars.jsx";
 import BookingModal from "../components/BookingModal.jsx";
 import CommentSection from "../components/CommentSection.jsx";
-import ReportModal from "../components/reportModal.jsx";
+import ReportModal from "../components/ReportModal.jsx";
 
 const careTypeLabel = {
   "elderly-care": "Elderly care",
   "baby-care": "Baby care",
   Both: "Elderly & baby care",
-};
+}; 
 
 const statusCopy = {
   pending: "Request sent — awaiting a call to confirm",

@@ -4,7 +4,7 @@ import RatingStars from "./RatingStars.jsx";
 import { useAuth } from "../context/AuthContext.jsx" ;
 import { toast } from "react-toastify" ;
 import { formatDistanceToNow } from "date-fns" ;
-import ReportModal from "./reportModal.jsx" ; 
+import ReportModal from "./ReportModal.jsx" ; 
  
 const FIFTEEN_MINUTES = 15 * 60 * 1000;
 

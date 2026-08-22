@@ -24,4 +24,5 @@ const verifyJwt = asyncHandler(async(req, res,next)=>{
       }   
 })
 
+
 export { verifyJwt }

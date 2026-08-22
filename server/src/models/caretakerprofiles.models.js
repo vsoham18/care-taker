@@ -9,7 +9,7 @@ const caretakerProfileSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-
+ 
     careType: {
       type: [String],   
       enum: ["Both","elderly-care", "baby-care"],
@@ -89,7 +89,7 @@ const caretakerProfileSchema = new mongoose.Schema(
 );
 
 caretakerProfileSchema.index({ location: "2dsphere" });
-caretakerProfileSchema.index({ city: 1, pincode: 1 , careType: 1 });
+
 caretakerProfileSchema.plugin(mongooseAggregatePaginate);
 
 export const CaretakerProfile = mongoose.model("CaretakerProfile", caretakerProfileSchema);

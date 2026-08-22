@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 const FilterBar = ({ onFilter }) => {
+  
   const [address, setAddress] = useState({
     city: "",
     state: "",
@@ -9,11 +10,18 @@ const FilterBar = ({ onFilter }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    setAddress((prev) => ({
-      ...prev,
+    const nextAddress = {
+      ...address,
       [name]: value,
-    }));
+    };
+
+    setAddress(nextAddress);
+
+    onFilter({
+      city: nextAddress.city.trim(),
+      state: nextAddress.state.trim(),
+      pincode: nextAddress.pincode.trim(),
+    });
   };
 
   const submit = (e) => {
@@ -79,6 +87,7 @@ const FilterBar = ({ onFilter }) => {
       </div>
 
       <div className="flex gap-2">
+
         <button type="submit" className="btn btn-primary">
           Search
         </button>
@@ -90,6 +99,7 @@ const FilterBar = ({ onFilter }) => {
         >
           Clear
         </button>
+
       </div>
     </form>
   );

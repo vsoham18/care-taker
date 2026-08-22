@@ -9,9 +9,9 @@ import { geocodeAddress } from "../utils/geocodeAddress.js";
 const escapeRegExp = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const listCaretakerProfiles = asyncHandler(async (req, res) => {
+  
   const page = Math.max(1, Number(req.query.page) || 1);
   const limit = Math.min(12, Math.max(1, Number(req.query.limit) || 12));
-  const skip = (page - 1) * limit;
 
   const lat = Number(req.query.lat);
   const lng = Number(req.query.lng);
@@ -19,20 +19,30 @@ const listCaretakerProfiles = asyncHandler(async (req, res) => {
   const hasLocation =
     Number.isFinite(lat) && Number.isFinite(lng);
 
-    
   const matchQuery = { status: "active" };
-  if (req.query.city) {
-    matchQuery.city = new RegExp(`^${escapeRegExp(req.query.city.trim())}$`, "i");
+
+  if (req.query.city?.trim()) {
+    matchQuery.city = {
+      $regex: escapeRegExp(req.query.city.trim()),
+      $options: "i",
+    };
   }
-  if (req.query.state) {
-    matchQuery.state = new RegExp(`^${escapeRegExp(req.query.state.trim())}$`, "i");
+
+  if (req.query.state?.trim()) {
+    matchQuery.state = {
+      $regex: escapeRegExp(req.query.state.trim()),
+      $options: "i",
+    };
   }
+
   if (req.query.pincode) {
     matchQuery.pincode = req.query.pincode.trim();
   }
 
   if (req.query.careType) {
-    matchQuery.careType = req.query.careType;
+    matchQuery.careType = req.query.careType === "Both"
+      ? "Both"
+      : { $in: [req.query.careType, "Both"] }
   }
 
   const pipeline = hasLocation
@@ -45,8 +55,11 @@ const listCaretakerProfiles = asyncHandler(async (req, res) => {
             },
             distanceField: "distance",
             spherical: true,
-            query: matchQuery,
+            query: { status: "active" },
           },
+        },
+        {
+          $match: matchQuery,
         },
         {
           $addFields: {
@@ -114,36 +127,33 @@ const listCaretakerProfiles = asyncHandler(async (req, res) => {
         "user.name": 1,
       },
     },
+  );
+
+  const result = await CaretakerProfile.aggregatePaginate(
+    CaretakerProfile.aggregate(pipeline),
     {
-      $skip: skip,
-    },
-    {
-      $limit: limit,
+      page,
+      limit,
+      useFacet: false,
     }
   );
 
-  const [profiles, total] = await Promise.all([
-    CaretakerProfile.aggregate(pipeline),
-    CaretakerProfile.countDocuments(matchQuery),
-  ]);
   
- const totalPages = Math.max(1, Math.ceil(total / limit));
-
   return res.status(200).json(
     new ApiResponse(
       200,
       {
-        profiles,
-        page,
-        limit,
-        total,
-        totalPages,
-        hasMore: page < Math.ceil(total / limit),
+       profiles: result.docs,
+        page: result.page,
+        limit: result.limit,
+        total: result.totalDocs,
+        totalPages: result.totalPages,
+        hasMore: result.hasNextPage, 
       },
       "Caretakers fetched successfully."
     )
   );
-});
+}); 
 
 const getCaretakerProfile = asyncHandler(async (req, res) => {
    const id = req.params.id

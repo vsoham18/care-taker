@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api/axios.js";
 import CaretakerCard from "../components/careTakerCard.jsx";
@@ -14,6 +14,7 @@ const CARE_TYPES = [
 
 const Home = () => {
   const { user, refreshUser } = useAuth();
+  const browseRef = useRef(null);
   const [profiles, setProfiles] = useState([]);
   
   const [page, setPage] = useState(1);
@@ -32,6 +33,11 @@ const Home = () => {
   // State management for location --->
   const [locationStatus, setLocationStatus] = useState("idle");
   const [coords, setCoords] = useState(null);
+
+  const handlePageChange = (nextPage) => {
+    setPage(nextPage);
+    browseRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
    
    //  location permisson----->
         useEffect(() => {
@@ -102,7 +108,7 @@ const Home = () => {
 
   return (
     <div>
-      {/* Hero */}
+      {/* About section ---->*/}
     <section className="texture-grain overflow-hidden border-b border-line bg-teal-500">
 
       <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 md:grid-cols-2 md:items-center md:py-24">
@@ -147,8 +153,8 @@ const Home = () => {
 
       <div className="stitch-divider" />
 
-      {/* Browse */}
-      <section id="browse" className="mx-auto max-w-6xl px-5 py-12">
+      {/* Browse the caretakers ----->*/}
+      <section ref={browseRef} id="browse" className="mx-auto max-w-6xl px-5 py-12">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="font-display text-2xl">Browse caretakers</h2>
@@ -175,7 +181,7 @@ const Home = () => {
             )}
           </div>
         </div>
-      
+       
       {/* Filter section--->*/}
         <div className="mb-6">
           <FilterBar
@@ -194,7 +200,7 @@ const Home = () => {
               key={val}
               onClick={() =>{
                  setPage(1)
-                setCareType(val)
+                 setCareType(val)
               }}
               className={`badge border ${
                 careType === val ? "border-teal-500 bg-teal-50 text-teal-600" : "border-line text-muted"
@@ -231,7 +237,7 @@ const Home = () => {
             {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
               <button
                 key={n}
-                onClick={() => setPage(n)}
+                onClick={() => handlePageChange(n)}
                 className={`h-8 w-8 rounded-full text-sm ${
                   n === page ? "bg-teal-500 text-white" : "bg-white text-ink hover:bg-teal-50"
                 }`}
@@ -243,6 +249,7 @@ const Home = () => {
         )}
 
       </section>
+
     </div>
   );
 };

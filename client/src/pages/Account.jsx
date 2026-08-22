@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 const Account = () => {
   const { user } = useAuth();
   if (!user) return null;
-
+ 
   return (
     <div className="mx-auto max-w-lg px-5 py-12">
       <h1 className="font-display text-3xl">Your account</h1>
@@ -21,13 +21,21 @@ const Account = () => {
       </div>
 
       <div className="mt-6 flex flex-wrap gap-3">
-        {user.isCaretaker ? (
+        {user.isCaretaker && user.caretakerProfile ? (
           <>
             <Link to="/requests" className="btn btn-primary inline-flex">
               Manage your booking requests
             </Link>
+
             <Link to="/edit-profile" className="btn btn-secondary inline-flex">
               Edit your caretaker profile
+            </Link>
+
+             <Link
+              to={`/caretaker/${user.caretakerProfile}`}
+              className="btn btn-accent inline-flex"
+            >
+              Visit your caretaker profile
             </Link>
           </>
         ) : (
